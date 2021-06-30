@@ -1,0 +1,37 @@
+language: ruby
+
+rvm:
+ - 2.5
+
+dist: xenial
+os: linux
+services:
+  - docker
+
+branches:
+  only:
+    - master
+    - /^\d\.\d\.\d(?:-\S*)?$/
+
+before_install:
+  - bkp_pwd=$(pwd)
+  - cd ./testing/docker/spectre-ssh # --project-directory does not work!
+  - docker-compose up -d
+  - cd $bkp_pwd
+
+jobs:
+  include:
+    - stage: test
+      script:
+        - bundle exec rspec spec
+        - bundle exec spectre -c testing/spectre/spectre.yml
+    - stage: build
+      script:
+        - bundle exec rake build
+    - stage: deploy
+      if: branch =~ /^\d\.\d\.\d(?:-\S*)?$/
+      script:
+        - bundle exec rake build
+        - 'echo -e "---\n:rubygems_api_key: $RUBYGEMS_APIKEY" > ~/.gem/credentials'
+        - chmod 0600 ~/.gem/credentials
+        - gem push pkg/*.gem

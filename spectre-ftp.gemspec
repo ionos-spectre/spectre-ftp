@@ -5,7 +5,7 @@ Gem::Specification.new do |spec|
   spec.email         = ['me@christianneubauer.de']
 
   spec.summary       = 'FTP module for spectre'
-  spec.description   = 'Adds FTP access functionality to the spectre framework'
+  spec.description   = 'Adds FTP functionality to the spectre framework'
   spec.homepage      = 'https://bitbucket.org/cneubaur/spectre-ftp'
   spec.license       = 'MIT'
   spec.required_ruby_version = Gem::Requirement.new('>= 2.5.0')

@@ -25,7 +25,7 @@ Configure some predefined FTP connection options in your environment file
 
 ```yml
 ftp:
-  some_ssh_conn:
+  some_ftp_conn:
     host: some.server.com
     username: dummy
     password: '*****'

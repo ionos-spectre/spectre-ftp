@@ -15,7 +15,7 @@ branches:
 
 before_install:
   - bkp_pwd=$(pwd)
-  - cd ./testing/docker/spectre-ssh # --project-directory does not work!
+  - cd ./testing/docker/spectre-ftp # --project-directory does not work!
   - docker-compose up -d
   - cd $bkp_pwd
 
@@ -24,7 +24,7 @@ jobs:
     - stage: test
       script:
         - bundle exec rspec spec
-        - bundle exec spectre -c testing/spectre/spectre.yml
+        - bundle exec spectre -c testing/spectre/spectre.yml -t !sftp
     - stage: build
       script:
         - bundle exec rake build

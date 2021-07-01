@@ -2,7 +2,7 @@
 
 [![Build Status](https://www.travis-ci.com/cneubaur/spectre-ftp.svg?branch=master)](https://www.travis-ci.com/cneubaur/spectre-ftp)
 
-This is a [spectre](https://bitbucket.org/cneubaur/spectre-core) module which provides FTP access functionality to the spectre framework.
+This is a [spectre](https://github.com/cneubauer/spectre-core) module which provides FTP access functionality to the spectre framework.
 
 
 ## Install

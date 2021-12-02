@@ -1,8 +1,8 @@
 # Spectre FTP
 
-[![Build Status](https://www.travis-ci.com/cneubaur/spectre-ftp.svg?branch=master)](https://www.travis-ci.com/cneubaur/spectre-ftp)
+[![Gem Version](https://badge.fury.io/rb/spectre-ftp.svg)](https://badge.fury.io/rb/spectre-ftp)
 
-This is a [spectre](https://github.com/cneubauer/spectre-core) module which provides FTP access functionality to the spectre framework.
+This is a [spectre](https://github.com/ionos-spectre/spectre-core) module which provides FTP access functionality to the spectre framework.
 
 
 ## Install
@@ -61,27 +61,5 @@ sftp 'some.server.com', username: 'u123456', password: '$up3rSecr37' do # use co
   upload 'dummy.txt' # uploads file to the root dir of the FTP connection
   download 'dummy.txt' # downloads file to the current working directory\
   download 'dummy.txt', to: '/tmp/dummy.txt' # downloads file to the given destination
-end
-```
-
-
-### Environment `spectre/environment`
-
-Add arbitrary properties to your `spectre.yml`
-
-```yml
-spooky_house:
-  ghost: casper
-```
-
-and get the property via `env` function.
-
-```ruby
-describe 'Hollow API' do
-  it 'sends out spooky ghosts' do
-    expect 'the environment variable to exist' do
-      env.spooky_house.ghost.should_be 'casper'
-    end
-  end
 end
 ```

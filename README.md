@@ -8,7 +8,7 @@ This is a [spectre](https://github.com/ionos-spectre/spectre-core) module which 
 ## Install
 
 ```bash
-$ gem install spectre-ftp
+$ sudo gem install spectre-ftp
 ```
 
 

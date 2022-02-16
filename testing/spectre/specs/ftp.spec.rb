@@ -1,67 +1,67 @@
 describe 'spectre/ftp' do
-  context 'sftp' do
-    setup do
-      observe 'sftp connection' do
-        sftp 'sftp_server' do
-          connect!
-        end
-      end
+  # context 'sftp' do
+  #   setup do
+  #     observe 'sftp connection' do
+  #       sftp 'sftp_server' do
+  #         connect!
+  #       end
+  #     end
 
-      expect 'the sftp connection to be ok' do
-        success?.should_be true
-      end
-    end
+  #     expect 'the sftp connection to be ok' do
+  #       success?.should_be true
+  #     end
+  #   end
 
-    it 'uploads a file to sftp server', tags: [:ftp, :sftp, :upload, :deps] do
-      info 'uploading dummy file via sftp'
+  #   it 'uploads a file to sftp server', tags: [:ftp, :sftp, :upload, :deps] do
+  #     info 'uploading dummy file via sftp'
 
-      observe 'file upload' do
-        sftp 'sftp_server' do
-          upload resources['dummy.txt'], to: './dummy.txt'
-        end
-      end
+  #     observe 'file upload' do
+  #       sftp 'sftp_server' do
+  #         upload resources['dummy.txt'], to: './dummy.txt'
+  #       end
+  #     end
 
-      expect 'the file upload to succeed' do
-        success?.should_be true
-      end
-    end
+  #     expect 'the file upload to succeed' do
+  #       success?.should_be true
+  #     end
+  #   end
 
-    it 'downloads a file from sftp server', tags: [:ftp, :sftp, :download, :deps] do
-      info 'downloading dummy file via sftp'
+  #   it 'downloads a file from sftp server', tags: [:ftp, :sftp, :download, :deps] do
+  #     info 'downloading dummy file via sftp'
 
-      downloaded_file = './dummy.txt'
+  #     downloaded_file = './dummy.txt'
 
-      downloaded_file.remove! if downloaded_file.exists?
+  #     downloaded_file.remove! if downloaded_file.exists?
 
-      observe 'file download' do
-        sftp 'sftp_server' do
-          download './dummy.txt', to: downloaded_file
-        end
-      end
+  #     observe 'file download' do
+  #       sftp 'sftp_server' do
+  #         download './dummy.txt', to: downloaded_file
+  #       end
+  #     end
 
-      expect 'the file download to succeed' do
-        success?.should_be true
-      end
+  #     expect 'the file download to succeed' do
+  #       success?.should_be true
+  #     end
 
-      expect 'the downloaded file to exist' do
-        downloaded_file.exists?.should_be true
-      end
+  #     expect 'the downloaded file to exist' do
+  #       downloaded_file.exists?.should_be true
+  #     end
 
-      downloaded_file.remove!
-    end
+  #     downloaded_file.remove!
+  #   end
 
-    it 'does not prompt for password', tags: [:ftp, :sftp, :noninteractive, :deps] do
-      observe 'trying to connect' do
-        sftp env.ftp.sftp_server.host, username: 'developer', password: 'somewrongpassword' do
-          connect!
-        end
-      end
+  #   it 'does not prompt for password', tags: [:ftp, :sftp, :noninteractive, :deps] do
+  #     observe 'trying to connect' do
+  #       sftp env.ftp.sftp_server.host, username: 'developer', password: 'somewrongpassword' do
+  #         connect!
+  #       end
+  #     end
 
-      expect 'the connection to fail' do
-        success?.should_be false
-      end
-    end
-  end
+  #     expect 'the connection to fail' do
+  #       success?.should_be false
+  #     end
+  #   end
+  # end
 
   context 'ftp' do
     setup do

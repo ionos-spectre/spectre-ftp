@@ -8,7 +8,7 @@ This is a [spectre](https://github.com/ionos-spectre/spectre-core) module which 
 ## Install
 
 ```bash
-gem install spectre-ftp
+$ sudo gem install spectre-ftp
 ```
 
 
@@ -34,9 +34,9 @@ ftp:
 
 ## Usage
 
-With the FTP helper you can define FTP connection parameter in the environment file and use either `ftp` or `sftp` function in your *specs*.
+With the FTP helper you can define FTP connection parameters in the environment file and use either `ftp` or `sftp` function in your *specs*.
 
-Within the `ftp` or `sftp` block there are the following functions available
+Within the `ftp` or `sftp` block there are the following functions available:
 
 | Method | Parameters | Description |
 | -------| ---------- | ----------- |
@@ -53,13 +53,13 @@ sftp 'some_ftp_conn' do # use connection name from config
 end
 ```
 
-You can also use the `ftp` and `sftp` function without configuring any connection in you environment file, by providing parameters to the function.
+You can also use the `ftp` and `sftp` function without configuring any connection in your environment file, by providing parameters to the function.
 This is helpful, when generating the connection parameters during the *spec* run.
 
 ```ruby
 sftp 'some.server.com', username: 'u123456', password: '$up3rSecr37' do # use connection name from config
   upload 'dummy.txt' # uploads file to the root dir of the FTP connection
-  download 'dummy.txt' # downloads file to the current working directory\
+  download 'dummy.txt' # downloads file to the current working directory
   download 'dummy.txt', to: '/tmp/dummy.txt' # downloads file to the given destination
 end
 ```

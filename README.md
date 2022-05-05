@@ -1,5 +1,7 @@
 # Spectre FTP
 
+[![Build](https://github.com/ionos-spectre/spectre-ftp/actions/workflows/build.yml/badge.svg)](https://github.com/ionos-spectre/spectre-ftp/actions/workflows/build.yml)
+
 [![Gem Version](https://badge.fury.io/rb/spectre-ftp.svg)](https://badge.fury.io/rb/spectre-ftp)
 
 This is a [spectre](https://github.com/ionos-spectre/spectre-core) module which provides FTP access functionality to the spectre framework.

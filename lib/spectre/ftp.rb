@@ -21,6 +21,7 @@ module Spectre
 
       def connect!
         return unless @__session == nil or @__session.closed?
+
         @__logger.info "Connecting to '#{@__host}' with user '#{@__username}'"
         @__session = Net::FTP.new(@__host, @__opts)
         @__session.login @__username, @__password
@@ -28,6 +29,7 @@ module Spectre
 
       def close
         return unless @__session and not @__session.closed?
+
         @__session.close
       end
 
@@ -60,7 +62,6 @@ module Spectre
       end
     end
 
-
     class SFTPConnection < DslClass
       def initialize host, username, opts, logger
         opts[:non_interactive] = true
@@ -74,6 +75,7 @@ module Spectre
 
       def connect!
         return unless @__session == nil or @__session.closed?
+
         @__logger.info "Connecting to '#{@__host}' with user '#{@__username}'"
         @__session = Net::SFTP.start(@__host, @__username, @__opts)
         @__session.connect!
@@ -114,10 +116,10 @@ module Spectre
 
       def exists path
         begin
-          file_info = @__session.stat! path
-
+          @__session.stat! path
         rescue Net::SFTP::StatusException => e
           return false if e.description == 'no such file'
+
           raise e
         end
 
@@ -129,6 +131,7 @@ module Spectre
     class << self
       def ftp name, config={}, &block
         raise "FTP connection '#{name}' not configured" unless @@cfg.key?(name) or config.count > 0
+
         cfg = @@cfg[name] || {}
 
         host = config[:host] || cfg['host'] || name

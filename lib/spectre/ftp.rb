@@ -19,6 +19,14 @@ module Spectre
         @__opts = opts
       end
 
+      def username user
+        @__username = username
+      end
+
+      def password pass
+        @__password = pass
+      end
+
       def connect!
         return unless @__session == nil or @__session.closed?
 

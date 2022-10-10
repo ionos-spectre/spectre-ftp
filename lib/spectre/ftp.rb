@@ -109,6 +109,7 @@ module Spectre
 
       def close
         return unless @__session and not @__session.closed?
+
         # @__session.close!
       end
 
@@ -156,8 +157,6 @@ module Spectre
 
     class << self
       def ftp name, config={}, &block
-        raise "FTP connection '#{name}' not configured" unless @@cfg.key?(name) or config.count > 0
-
         cfg = @@cfg[name] || {}
 
         host = config[:host] || cfg['host'] || name
@@ -167,8 +166,6 @@ module Spectre
         opts = {}
         opts[:ssl] = config[:ssl]
         opts[:port] = config[:port] || cfg['port'] || 21
-
-        @@logger.info "Connecting to #{host} with user #{username}"
 
         ftp_conn = FTPConnection.new(host, username, password, opts, @@logger)
 
@@ -180,8 +177,6 @@ module Spectre
       end
 
       def sftp name, config={}, &block
-        raise "FTP connection '#{name}' not configured" unless @@cfg.key?(name) or config.count > 0
-
         cfg = @@cfg[name] || {}
 
         host = config[:host] || cfg['host'] || name

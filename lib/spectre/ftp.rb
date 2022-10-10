@@ -52,20 +52,20 @@ module Spectre
 
       def download remotefile, to: File.basename(remotefile)
         connect!
-        @__logger.info "Downloading '#{@__username}@#{@__host}:#{File.join @__session.pwd, remotefile}' to '#{File.expand_path to}'"
+        @__logger.info("Downloading '#{@__username}@#{@__host}:#{File.join @__session.pwd, remotefile}' to '#{File.expand_path to}'")
         @__session.getbinaryfile(remotefile, to)
       end
 
       def upload localfile, to: File.basename(localfile)
         connect!
-        @__logger.info "Uploading '#{File.expand_path localfile}' to '#{@__username}@#{@__host}:#{File.join @__session.pwd, to}'"
+        @__logger.info("Uploading '#{File.expand_path localfile}' to '#{@__username}@#{@__host}:#{File.join @__session.pwd, to}'")
         @__session.putbinaryfile(localfile, to)
       end
 
       def list
         connect!
         file_list = @__session.list
-        @__logger.info "Listing file in #{@__session.pwd}\n#{file_list}"
+        @__logger.info("Listing files in #{@__session.pwd}\n#{file_list}")
         file_list
       end
     end

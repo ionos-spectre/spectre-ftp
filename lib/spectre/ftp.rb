@@ -122,14 +122,14 @@ module Spectre
       end
 
       def download remotefile, to: File.basename(remotefile)
-        @__logger.info "Downloading '#{@__username}@#{@__host}:#{remotefile}' to '#{File.expand_path to}'"
         connect!
+        @__logger.info "Downloading '#{@__username}@#{@__host}:#{remotefile}' to '#{File.expand_path to}'"
         @__session.download!(remotefile, to)
       end
 
       def upload localfile, to: File.basename(localfile)
-        @__logger.info "Uploading '#{File.expand_path localfile}' to '#{@__username}@#{@__host}:#{to}'"
         connect!
+        @__logger.info "Uploading '#{File.expand_path localfile}' to '#{@__username}@#{@__host}:#{to}'"
         @__session.upload!(localfile, to)
       end
 

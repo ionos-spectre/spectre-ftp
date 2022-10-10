@@ -81,6 +81,24 @@ module Spectre
         @__opts = opts
       end
 
+      def username user
+        @__username = user
+      end
+
+      def password pass
+        @__opts[:password] = pass
+        @__opts[:auth_methods].push 'password' unless @__opts[:auth_methods].include? 'password'
+      end
+
+      def private_key file_path
+        @__opts[:keys] = [file_path]
+        @__opts[:auth_methods].push 'publickey' unless @__opts[:auth_methods].include? 'publickey'
+      end
+
+      def passphrase phrase
+        @__opts[:passphrase] = phrase
+      end
+
       def connect!
         return unless @__session == nil or @__session.closed?
 

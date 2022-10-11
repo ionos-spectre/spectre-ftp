@@ -20,7 +20,7 @@ module Spectre
       end
 
       def username user
-        @__username = username
+        @__username = user
       end
 
       def password pass

@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name          = 'spectre-ftp'
-  spec.version       = '1.0.0'
+  spec.version       = '2.0.0'
   spec.authors       = ['Christian Neubauer']
   spec.email         = ['christian.neubauer@ionos.com']
 
@@ -21,5 +21,5 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   spec.add_runtime_dependency 'net-sftp', '~> 3.0.0'
-  spec.add_runtime_dependency 'spectre-core', '>= 1.8.4'
+  spec.add_runtime_dependency 'spectre-core', '>= 2.0.0'
 end

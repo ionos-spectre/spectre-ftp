@@ -8,7 +8,7 @@ module Spectre
   module FTP
     @@cfg = {}
 
-    class FTPConnection < DslClass
+    class FTPConnection < Spectre::DslBase
       def initialize host, username, password, opts, logger
         @__logger = logger
         @__session = nil
@@ -70,7 +70,7 @@ module Spectre
       end
     end
 
-    class SFTPConnection < DslClass
+    class SFTPConnection < Spectre::DslBase
       def initialize host, username, opts, logger
         opts[:non_interactive] = true
 
@@ -155,9 +155,14 @@ module Spectre
     end
 
 
-    class << self
+    class FtpClient
+      def initialize config, logger
+        @config = config
+        @logger = logger
+      end
+
       def ftp name, config={}, &block
-        cfg = @@cfg[name] || {}
+        cfg = @config[name] || {}
 
         host = config[:host] || cfg['host'] || name
         username = config[:username] || cfg['username']
@@ -167,17 +172,17 @@ module Spectre
         opts[:ssl] = config[:ssl]
         opts[:port] = config[:port] || cfg['port'] || 21
 
-        ftp_conn = FTPConnection.new(host, username, password, opts, @@logger)
+        ftp_conn = FTPConnection.new(host, username, password, opts, @logger)
 
         begin
-          ftp_conn.instance_eval &block
+          ftp_conn._evaluate(&block)
         ensure
           ftp_conn.close
         end
       end
 
       def sftp name, config={}, &block
-        cfg = @@cfg[name] || {}
+        cfg = @config[name] || {}
 
         host = config[:host] || cfg['host'] || name
         username = config[:username] || cfg['username']
@@ -193,27 +198,20 @@ module Spectre
         opts[:auth_methods].push 'publickey' if opts[:keys]
         opts[:auth_methods].push 'password' if opts[:password]
 
-        sftp_con = SFTPConnection.new(host, username, opts, @@logger)
+        sftp_con = SFTPConnection.new(host, username, opts, @logger)
 
         begin
-          sftp_con.instance_eval &block
+          sftp_con._evaluate(&block)
         ensure
           sftp_con.close
         end
       end
     end
+  end
+end
 
-    Spectre.register do |config|
-      @@logger = Spectre::Logging::ModuleLogger.new(config, 'spectre/ftp')
-
-      if config.key? 'ftp'
-
-        config['ftp'].each do |name, cfg|
-          @@cfg[name] = cfg
-        end
-      end
-    end
-
-    Spectre.delegate :ftp, :sftp, to: self
+Spectre.define 'spectre/ftp' do |config, logger, _scope|
+  register :ftp, :sftp do
+    Spectre::FTP::FtpClient.new(config, logger)
   end
 end

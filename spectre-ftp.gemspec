@@ -7,10 +7,8 @@ Gem::Specification.new do |spec|
   spec.summary       = 'FTP module for spectre'
   spec.description   = 'Adds FTP functionality to the spectre framework'
   spec.homepage      = 'https://github.com/ionos-spectre/spectre-ftp'
-  spec.license       = 'MIT'
-  spec.required_ruby_version = Gem::Requirement.new('>= 3.0.0')
-
-  #spec.metadata['allowed_push_host'] = 'https://rubygems.org/'
+  spec.license       = 'GPL-3.0-or-later'
+  spec.required_ruby_version = '>= 3.1.0'
 
   spec.metadata['homepage_uri'] = spec.homepage
   spec.metadata['source_code_uri'] = 'https://github.com/ionos-spectre/spectre-ftp'
@@ -21,5 +19,4 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   spec.add_runtime_dependency 'net-sftp', '~> 4.0.0'
-  spec.add_runtime_dependency 'spectre-core', '>= 1.14.0'
 end

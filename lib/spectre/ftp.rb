@@ -6,9 +6,7 @@ require 'json'
 
 module Spectre
   module FTP
-    @@cfg = {}
-
-    class FTPConnection < DslClass
+    class FTPConnection
       def initialize host, username, password, opts, logger
         @__logger = logger
         @__session = nil
@@ -70,7 +68,7 @@ module Spectre
       end
     end
 
-    class SFTPConnection < DslClass
+    class SFTPConnection
       def initialize host, username, opts, logger
         opts[:non_interactive] = true
 
@@ -110,7 +108,7 @@ module Spectre
       def close
         return unless @__session and not @__session.closed?
 
-        # @__session.close!
+        @__session.close!
       end
 
       def can_connect?
@@ -156,8 +154,11 @@ module Spectre
 
 
     class << self
+      @@config = defined?(Spectre::CONFIG) ? Spectre::CONFIG['ftp'] : {}
+      @@logger = defined?(Spectre.logger) ? Spectre.logger : Logger.new(STDOUT)
+
       def ftp name, config={}, &block
-        cfg = @@cfg[name] || {}
+        cfg = @@config[name] || {}
 
         host = config[:host] || cfg['host'] || name
         username = config[:username] || cfg['username']
@@ -177,7 +178,7 @@ module Spectre
       end
 
       def sftp name, config={}, &block
-        cfg = @@cfg[name] || {}
+        cfg = @@config[name] || {}
 
         host = config[:host] || cfg['host'] || name
         username = config[:username] || cfg['username']
@@ -202,18 +203,5 @@ module Spectre
         end
       end
     end
-
-    Spectre.register do |config|
-      @@logger = Spectre::Logging::ModuleLogger.new(config, 'spectre/ftp')
-
-      if config.key? 'ftp'
-
-        config['ftp'].each do |name, cfg|
-          @@cfg[name] = cfg
-        end
-      end
-    end
-
-    Spectre.delegate :ftp, :sftp, to: self
   end
 end

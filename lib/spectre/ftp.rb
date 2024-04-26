@@ -208,3 +208,9 @@ module Spectre
     end
   end
 end
+
+%i{ftp sftp}.each do |method|
+  Kernel.define_method(method) do |*args, &block|
+    Spectre::FTP.send(method, *args, &block)
+  end
+end

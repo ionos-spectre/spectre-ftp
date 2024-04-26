@@ -32,13 +32,13 @@ RSpec.describe 'FTP' do
           Spectre::CONFIG['ftp']['example']['username'],
           Spectre::CONFIG['ftp']['example']['password']
         )
-      
+
       expect(Net::FTP).to receive(:new).with(*opts).and_return(ftp_session)
       expect(ftp_session).to receive(:putbinaryfile).with('dummy.txt', 'dummy.txt')
     end
 
     it 'does upload a file via ftp' do
-      Spectre::FTP.ftp'some-data.host' do
+      Spectre::FTP.ftp 'some-data.host' do
         username 'dummy'
         password '<some-secret-password>'
         upload 'dummy.txt'
@@ -46,7 +46,7 @@ RSpec.describe 'FTP' do
     end
 
     it 'does upload a file via ftp with preconfig' do
-      Spectre::FTP.ftp'example' do
+      Spectre::FTP.ftp 'example' do
         upload 'dummy.txt'
       end
     end
@@ -76,7 +76,7 @@ RSpec.describe 'FTP' do
     end
 
     it 'does upload a file via sftp' do
-      Spectre::FTP.sftp'some-data.host' do
+      Spectre::FTP.sftp 'some-data.host' do
         username 'dummy'
         password '<some-secret-password>'
         upload 'dummy.txt'
@@ -84,7 +84,7 @@ RSpec.describe 'FTP' do
     end
 
     it 'does upload a file via sftp with preconfig' do
-      Spectre::FTP.sftp'example' do
+      Spectre::FTP.sftp 'example' do
         upload 'dummy.txt'
       end
     end

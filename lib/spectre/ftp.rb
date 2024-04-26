@@ -154,8 +154,11 @@ module Spectre
 
 
     class << self
-      @@config = defined?(Spectre::CONFIG) ? Spectre::CONFIG['ftp'] : {}
-      @@logger = defined?(Spectre.logger) ? Spectre.logger : Logger.new(STDOUT)
+      @@config = defined?(Spectre::CONFIG) ? Spectre::CONFIG['ftp'] || {} : {}
+
+      def logger
+        @@logger ||= defined?(Spectre.logger) ? Spectre.logger : Logger.new(STDOUT)
+      end
 
       def ftp name, config={}, &block
         cfg = @@config[name] || {}
@@ -168,7 +171,7 @@ module Spectre
         opts[:ssl] = config[:ssl]
         opts[:port] = config[:port] || cfg['port'] || 21
 
-        ftp_conn = FTPConnection.new(host, username, password, opts, @@logger)
+        ftp_conn = FTPConnection.new(host, username, password, opts, logger)
 
         begin
           ftp_conn.instance_eval &block
@@ -194,7 +197,7 @@ module Spectre
         opts[:auth_methods].push 'publickey' if opts[:keys]
         opts[:auth_methods].push 'password' if opts[:password]
 
-        sftp_con = SFTPConnection.new(host, username, opts, @@logger)
+        sftp_con = SFTPConnection.new(host, username, opts, logger)
 
         begin
           sftp_con.instance_eval &block

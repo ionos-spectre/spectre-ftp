@@ -3,12 +3,9 @@ require 'net/sftp'
 require 'logger'
 require 'json'
 
-
 module Spectre
   module FTP
-    @@cfg = {}
-
-    class FTPConnection < DslClass
+    class FTPConnection
       def initialize host, username, password, opts, logger
         @__logger = logger
         @__session = nil
@@ -28,7 +25,7 @@ module Spectre
       end
 
       def connect!
-        return unless @__session == nil or @__session.closed?
+        return unless @__session.nil? or @__session.closed?
 
         @__logger.info "Connecting to '#{@__host}' with user '#{@__username}'"
         @__session = Net::FTP.new(@__host, @__opts)
@@ -36,29 +33,34 @@ module Spectre
       end
 
       def close
-        return unless @__session and not @__session.closed?
+        return unless @__session and !@__session.closed?
 
         @__session.close
       end
 
       def can_connect?
-        begin
-          connect!
-          return true
-        rescue
-          return false
-        end
+        connect!
+        true
+      rescue StandardError
+        false
       end
 
       def download remotefile, to: File.basename(remotefile)
         connect!
-        @__logger.info("Downloading '#{@__username}@#{@__host}:#{File.join @__session.pwd, remotefile}' to '#{File.expand_path to}'")
+        @__logger.info(
+          "Downloading \
+          '#{@__username}@#{@__host}:#{File.join @__session.pwd, remotefile}' \
+          to '#{File.expand_path to}'"
+        )
         @__session.getbinaryfile(remotefile, to)
       end
 
       def upload localfile, to: File.basename(localfile)
         connect!
-        @__logger.info("Uploading '#{File.expand_path localfile}' to '#{@__username}@#{@__host}:#{File.join @__session.pwd, to}'")
+        @__logger.info(
+          "Uploading '#{File.expand_path localfile}' \
+          to '#{@__username}@#{@__host}:#{File.join @__session.pwd, to}'"
+        )
         @__session.putbinaryfile(localfile, to)
       end
 
@@ -70,7 +72,7 @@ module Spectre
       end
     end
 
-    class SFTPConnection < DslClass
+    class SFTPConnection
       def initialize host, username, opts, logger
         opts[:non_interactive] = true
 
@@ -100,26 +102,24 @@ module Spectre
       end
 
       def connect!
-        return unless @__session == nil or @__session.closed?
+        return unless @__session.nil? or @__session.closed?
 
-        @__logger.info "Connecting to '#{@__host}' with user '#{@__username}'"
+        @__logger.info("Connecting to '#{@__host}' with user '#{@__username}'")
         @__session = Net::SFTP.start(@__host, @__username, @__opts)
         @__session.connect!
       end
 
       def close
-        return unless @__session and not @__session.closed?
+        nil unless @__session and !@__session.closed?
 
-        # @__session.close!
+        @__session.close!
       end
 
       def can_connect?
-        begin
-          connect!
-          return true
-        rescue
-          return false
-        end
+        connect!
+        true
+      rescue StandardError
+        false
       end
 
       def download remotefile, to: File.basename(remotefile)
@@ -150,14 +150,19 @@ module Spectre
           raise e
         end
 
-        return true
+        true
       end
     end
 
-
     class << self
-      def ftp name, config={}, &block
-        cfg = @@cfg[name] || {}
+      @@config = defined?(Spectre::CONFIG) ? Spectre::CONFIG['ftp'] || {} : {}
+
+      def logger
+        @@logger ||= defined?(Spectre.logger) ? Spectre.logger : Logger.new($stdout)
+      end
+
+      def ftp(name, config = {}, &)
+        cfg = @@config[name] || {}
 
         host = config[:host] || cfg['host'] || name
         username = config[:username] || cfg['username']
@@ -167,17 +172,17 @@ module Spectre
         opts[:ssl] = config[:ssl]
         opts[:port] = config[:port] || cfg['port'] || 21
 
-        ftp_conn = FTPConnection.new(host, username, password, opts, @@logger)
+        ftp_conn = FTPConnection.new(host, username, password, opts, logger)
 
         begin
-          ftp_conn.instance_eval &block
+          ftp_conn.instance_eval(&)
         ensure
           ftp_conn.close
         end
       end
 
-      def sftp name, config={}, &block
-        cfg = @@cfg[name] || {}
+      def sftp(name, config = {}, &)
+        cfg = @@config[name] || {}
 
         host = config[:host] || cfg['host'] || name
         username = config[:username] || cfg['username']
@@ -193,27 +198,21 @@ module Spectre
         opts[:auth_methods].push 'publickey' if opts[:keys]
         opts[:auth_methods].push 'password' if opts[:password]
 
-        sftp_con = SFTPConnection.new(host, username, opts, @@logger)
+        sftp_con = SFTPConnection.new(host, username, opts, logger)
 
         begin
-          sftp_con.instance_eval &block
+          sftp_con.instance_eval(&)
         ensure
           sftp_con.close
         end
       end
     end
-
-    Spectre.register do |config|
-      @@logger = Spectre::Logging::ModuleLogger.new(config, 'spectre/ftp')
-
-      if config.key? 'ftp'
-
-        config['ftp'].each do |name, cfg|
-          @@cfg[name] = cfg
-        end
-      end
-    end
-
-    Spectre.delegate :ftp, :sftp, to: self
   end
 end
+
+%i[ftp sftp].each do |method|
+  Kernel.define_method(method) do |*args, &block|
+    Spectre::FTP.send(method, *args, &block)
+  end
+end
+

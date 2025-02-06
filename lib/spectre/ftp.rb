@@ -106,13 +106,13 @@ module Spectre
 
         @__logger.info("Connecting to '#{@__host}' with user '#{@__username}'")
         @__session = Net::SFTP.start(@__host, @__username, @__opts)
-        @__session.connect!
+        @__handle = @__session.connect!
       end
 
       def close
         nil unless @__session and !@__session.closed?
 
-        @__session.close!
+        @__session.close! @__handle
       end
 
       def can_connect?

@@ -78,8 +78,6 @@ module Spectre
       include Spectre::Delegate if defined? Spectre::Delegate
 
       def initialize host, username, opts, logger
-        opts[:non_interactive] = true
-
         @__logger = logger
         @__session = nil
         @__host = host
@@ -110,13 +108,13 @@ module Spectre
 
         @__logger.info("Connecting to '#{@__host}' with user '#{@__username}'")
         @__session = Net::SFTP.start(@__host, @__username, @__opts)
-        @__handle = @__session.connect!
+        @__session.connect!
       end
 
       def close
         return if @__session.nil? or @__session.closed?
 
-        @__session.close! @__handle
+        @__session.close_channel
       end
 
       def can_connect?
@@ -205,6 +203,8 @@ module Spectre
         opts[:auth_methods] = []
         opts[:auth_methods].push 'publickey' if opts[:keys]
         opts[:auth_methods].push 'password' if opts[:password]
+
+        opts[:non_interactive] = true
 
         sftp_con = SFTPConnection.new(host, username, opts, logger)
 

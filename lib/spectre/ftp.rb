@@ -110,7 +110,7 @@ module Spectre
       end
 
       def close
-        nil unless @__session and !@__session.closed?
+        return if @__session.nil? or @__session.closed?
 
         @__session.close! @__handle
       end

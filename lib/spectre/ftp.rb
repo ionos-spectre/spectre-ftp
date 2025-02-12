@@ -75,6 +75,8 @@ module Spectre
     end
 
     class SFTPConnection
+      include Spectre::Delegate if defined? Spectre::Delegate
+
       def initialize host, username, opts, logger
         opts[:non_interactive] = true
 

@@ -6,6 +6,8 @@ require 'json'
 module Spectre
   module FTP
     class FTPConnection
+      include Spectre::Delegate if defined? Spectre::Delegate
+
       def initialize host, username, password, opts, logger
         @__logger = logger
         @__session = nil
@@ -158,7 +160,11 @@ module Spectre
       @@config = defined?(Spectre::CONFIG) ? Spectre::CONFIG['ftp'] || {} : {}
 
       def logger
-        @@logger ||= defined?(Spectre.logger) ? Spectre.logger : Logger.new($stdout)
+        @@logger ||= if defined?(Spectre)
+                       Spectre.logger
+                     else
+                       Logger.new($stdout, progname: 'spectre/ftp')
+                     end
       end
 
       def ftp(name, config = {}, &)

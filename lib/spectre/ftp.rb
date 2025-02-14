@@ -4,7 +4,7 @@ require 'logger'
 require 'json'
 
 module Spectre
-  module FTP
+  module Ftp
     class FTPConnection
       include Spectre::Delegate if defined? Spectre::Delegate
 
@@ -156,19 +156,16 @@ module Spectre
       end
     end
 
-    class << self
-      @@config = defined?(Spectre::CONFIG) ? Spectre::CONFIG['ftp'] || {} : {}
+    class Client
+      include Spectre::Delegate if defined? Spectre::Delegate
 
-      def logger
-        @@logger ||= if defined?(Spectre)
-                       Spectre.logger
-                     else
-                       Logger.new($stdout, progname: 'spectre/ftp')
-                     end
+      def initialize config, logger
+        @config = config['ftp'] || {}
+        @logger = logger
       end
 
       def ftp(name, config = {}, &)
-        cfg = @@config[name] || {}
+        cfg = @config[name] || {}
 
         host = config[:host] || cfg['host'] || name
         username = config[:username] || cfg['username']
@@ -178,7 +175,7 @@ module Spectre
         opts[:ssl] = config[:ssl]
         opts[:port] = config[:port] || cfg['port'] || 21
 
-        ftp_conn = FTPConnection.new(host, username, password, opts, logger)
+        ftp_conn = FTPConnection.new(host, username, password, opts, @logger)
 
         begin
           ftp_conn.instance_eval(&)
@@ -188,7 +185,7 @@ module Spectre
       end
 
       def sftp(name, config = {}, &)
-        cfg = @@config[name] || {}
+        cfg = @config[name] || {}
 
         host = config[:host] || cfg['host'] || name
         username = config[:username] || cfg['username']
@@ -206,7 +203,7 @@ module Spectre
 
         opts[:non_interactive] = true
 
-        sftp_con = SFTPConnection.new(host, username, opts, logger)
+        sftp_con = SFTPConnection.new(host, username, opts, @logger)
 
         begin
           sftp_con.instance_eval(&)
@@ -216,11 +213,6 @@ module Spectre
       end
     end
   end
-end
 
-%i[ftp sftp].each do |method|
-  Kernel.define_method(method) do |*args, &block|
-    Spectre::FTP.send(method, *args, &block)
-  end
+  Engine.register(Ftp::Client, :ftp, :sftp)
 end
-

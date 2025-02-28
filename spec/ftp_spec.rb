@@ -1,14 +1,12 @@
-module Spectre
-  CONFIG = {
-    'ftp' => {
-      'example' => {
-        'host' => 'some-data.host',
-        'username' => 'dummy',
-        'password' => '<some-secret-password>',
-      },
+CONFIG = {
+  'ftp' => {
+    'example' => {
+      'host' => 'some-data.host',
+      'username' => 'dummy',
+      'password' => '<some-secret-password>',
     },
-  }
-end
+  },
+}
 
 require_relative '../lib/spectre/ftp'
 
@@ -29,16 +27,18 @@ RSpec.describe 'FTP' do
       expect(ftp_session).to receive(:pwd).and_return('/')
       expect(ftp_session).to receive(:login)
         .with(
-          Spectre::CONFIG['ftp']['example']['username'],
-          Spectre::CONFIG['ftp']['example']['password']
+          CONFIG['ftp']['example']['username'],
+          CONFIG['ftp']['example']['password']
         )
 
       expect(Net::FTP).to receive(:new).with(*opts).and_return(ftp_session)
       expect(ftp_session).to receive(:putbinaryfile).with('dummy.txt', 'dummy.txt')
+
+      @client = Spectre::FTP::Client.new(CONFIG, Logger.new(StringIO.new))
     end
 
     it 'does upload a file via ftp' do
-      Spectre::FTP.ftp 'some-data.host' do
+      @client.ftp 'some-data.host' do
         username 'dummy'
         password '<some-secret-password>'
         upload 'dummy.txt'
@@ -46,7 +46,7 @@ RSpec.describe 'FTP' do
     end
 
     it 'does upload a file via ftp with preconfig' do
-      Spectre::FTP.ftp 'example' do
+      @client.ftp 'example' do
         upload 'dummy.txt'
       end
     end
@@ -61,22 +61,24 @@ RSpec.describe 'FTP' do
           auth_methods: ['password'],
           port: 22,
           non_interactive: true,
-          password: Spectre::CONFIG['ftp']['example']['password'],
+          password: CONFIG['ftp']['example']['password'],
         }
       ]
 
       ftp_session = double(Net::SFTP::Session)
       expect(ftp_session).to receive(:closed?)
-      expect(ftp_session).to receive(:close!)
+      expect(ftp_session).to receive(:close_channel)
       expect(ftp_session).to receive(:connect!)
 
       expect(Net::SFTP).to receive(:start).with(*opts).and_return(ftp_session)
 
       expect(ftp_session).to receive(:upload!).with('dummy.txt', 'dummy.txt')
+
+      @client = Spectre::FTP::Client.new(CONFIG, Logger.new(StringIO.new))
     end
 
     it 'does upload a file via sftp' do
-      Spectre::FTP.sftp 'some-data.host' do
+      @client.sftp 'some-data.host' do
         username 'dummy'
         password '<some-secret-password>'
         upload 'dummy.txt'
@@ -84,7 +86,7 @@ RSpec.describe 'FTP' do
     end
 
     it 'does upload a file via sftp with preconfig' do
-      Spectre::FTP.sftp 'example' do
+      @client.sftp 'example' do
         upload 'dummy.txt'
       end
     end

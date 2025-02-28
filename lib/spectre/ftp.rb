@@ -214,5 +214,5 @@ module Spectre
     end
   end
 
-  Engine.register(FTP::Client, :ftp, :sftp)
+  Engine.register(FTP::Client, :ftp, :sftp) if defined? Engine
 end

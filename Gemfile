@@ -4,6 +4,7 @@ source 'https://rubygems.org'
 
 gemspec
 
+gem 'benchmark'
 gem 'debug', '~> 1.9.1', require: false
 gem 'rake', '~> 13.1.0'
 gem 'rspec', '~> 3.13.0', require: 'spec'

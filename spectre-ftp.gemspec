@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.description   = 'A simple FTP wrapper for nice readability. Is compatible with spectre-core.'
   spec.homepage      = 'https://github.com/ionos-spectre/spectre-ftp'
   spec.license       = 'GPL-3.0-or-later'
-  spec.required_ruby_version = Gem::Requirement.new('>= 3.1.0')
+  spec.required_ruby_version = '>= 3.4'
 
   spec.metadata['homepage_uri'] = spec.homepage
   spec.metadata['source_code_uri'] = 'https://github.com/ionos-spectre/spectre-ftp'

@@ -4,7 +4,7 @@ require 'logger'
 require 'json'
 
 module Spectre
-  module Ftp
+  module FTP
     class FTPConnection
       include Spectre::Delegate if defined? Spectre::Delegate
 
@@ -214,5 +214,5 @@ module Spectre
     end
   end
 
-  Engine.register(Ftp::Client, :ftp, :sftp)
+  Engine.register(FTP::Client, :ftp, :sftp)
 end

@@ -19,6 +19,7 @@ Gem::Specification.new do |spec|
   spec.files        += Dir.glob('lib/**/*')
   spec.require_paths = ['lib']
 
+  spec.add_dependency 'logger'
   spec.add_dependency 'net-ftp'
   spec.add_dependency 'net-sftp'
 end

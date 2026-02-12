@@ -25,19 +25,19 @@ desc 'Run integration tests with Docker cleanup'
 task :integration do
   puts "\n==> Cleaning up Docker environment..."
   system('docker-compose down -v')
-  
+
   puts "\n==> Starting Docker servers..."
   system('docker-compose up -d')
-  
+
   puts "\n==> Waiting for servers to be ready..."
   sleep 10
-  
+
   puts "\n==> Running integration tests..."
   result = system('bundle exec rspec --format documentation --tag integration')
-  
+
   puts "\n==> Cleaning up Docker environment..."
   system('docker-compose down -v')
-  
+
   exit(1) unless result
 end
 
@@ -47,16 +47,16 @@ namespace :docker do
   task :up do
     system('docker-compose down -v')
     system('docker-compose up -d')
-    puts "Docker servers started. Waiting 10 seconds for initialization..."
+    puts 'Docker servers started. Waiting 10 seconds for initialization...'
     sleep 10
-    puts "Docker servers ready!"
+    puts 'Docker servers ready!'
   end
-  
+
   desc 'Stop Docker servers'
   task :down do
     system('docker-compose down -v')
   end
-  
+
   desc 'View Docker logs'
   task :logs do
     system('docker-compose logs -f')

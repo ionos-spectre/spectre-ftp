@@ -26,10 +26,6 @@ bundle exec rspec --tag ~integration
 
 ### Integration Tests
 
-Integration tests use real FTP and SFTP servers running in Docker containers. See [INTEGRATION_TESTING.md](INTEGRATION_TESTING.md) for detailed instructions.
-
-Quick start:
-
 ```bash
 # Start Docker servers
 docker-compose up -d
@@ -40,18 +36,6 @@ bundle exec rspec --tag integration
 # Stop Docker servers
 docker-compose down
 ```
-
-Or use the Makefile:
-
-```bash
-make integration-test    # Run integration tests
-make unit-test          # Run unit tests only
-make test-all           # Run all tests
-```
-
-The integration tests verify all functionality against real servers:
-- **FTP** server on localhost:2121 (username: ftpuser, password: ftppass)
-- **SFTP** server on localhost:2222 (username: sftpuser, password: sftppass)
 
 
 ## Configure
@@ -820,3 +804,142 @@ The FTP module provides comprehensive methods for both FTP and SFTP operations:
 ✅ **stat** - Get detailed file attributes and permissions  
 
 All methods work consistently across both FTP and SFTP implementations, making it easy to switch between protocols without changing your test code.
+
+---
+
+## Contributing
+
+We welcome contributions! This section covers the development setup and testing procedures.
+
+### Prerequisites
+
+- Ruby 3.4+ (or compatible version)
+- Docker and Docker Compose (for integration tests)
+- Bundler for dependency management
+
+### Getting Started
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/ionos-spectre/spectre-ftp.git
+   cd spectre-ftp
+   ```
+
+2. **Install dependencies**
+   ```bash
+   bundle install
+   ```
+
+### Running Tests
+
+The project includes both unit tests (mocked) and integration tests (against real FTP/SFTP servers).
+
+#### Unit Tests
+
+Unit tests use mocked FTP/SFTP connections and don't require Docker:
+
+```bash
+bundle exec rake spec_unit
+```
+
+These tests run quickly and verify the API behavior without actual network connections.
+
+#### Integration Tests
+
+Integration tests run against real FTP and SFTP servers in Docker containers:
+
+```bash
+bundle exec rake integration
+```
+
+This command automatically:
+- Cleans up any existing Docker containers
+- Starts fresh FTP and SFTP servers
+- Waits for servers to be ready
+- Runs all integration tests
+- Cleans up Docker containers after completion
+
+**Note**: Always use `rake integration` instead of running RSpec directly with the integration tag, as it ensures proper Docker lifecycle management.
+
+#### Run All Tests
+
+To run both unit and integration tests together:
+
+```bash
+bundle exec rake spec
+```
+
+### Docker Setup
+
+The project includes Docker configurations for testing:
+
+- **FTP Server**: pure-ftpd running on port 2121
+  - Username: `ftpuser`
+  - Password: `ftppass`
+  
+- **SFTP Server**: OpenSSH-based SFTP on port 2222
+  - Username: `sftpuser`
+  - Password: `sftppass`
+
+#### Manual Docker Management
+
+If you need to manually control the Docker servers:
+
+```bash
+# Start servers
+bundle exec rake docker:up
+
+# View logs
+bundle exec rake docker:logs
+
+# Stop servers
+bundle exec rake docker:down
+```
+
+The Docker containers are defined in `docker-compose.yml` with configurations in:
+- `docker/ftp/` - FTP server configuration
+- `docker/sftp/` - SFTP server configuration
+
+### Project Structure
+
+```
+spectre-ftp/
+├── lib/
+│   └── spectre/
+│       └── ftp.rb              # Main implementation
+├── spec/
+│   ├── ftp_spec.rb             # Unit tests (mocked)
+│   ├── ftp_integration_spec.rb # FTP integration tests
+│   └── sftp_integration_spec.rb # SFTP integration tests
+├── docker/
+│   ├── ftp/                    # FTP server Docker config
+│   └── sftp/                   # SFTP server Docker config
+├── docker-compose.yml          # Docker orchestration
+└── Rakefile                    # Test tasks
+```
+
+### Making Changes
+
+1. **Write tests first**: Add unit tests for new functionality
+2. **Implement the feature**: Update `lib/spectre/ftp.rb`
+3. **Run unit tests**: `bundle exec rake spec_unit`
+4. **Add integration tests**: If needed, add tests to verify against real servers
+5. **Run integration tests**: `bundle exec rake integration`
+6. **Update documentation**: Add examples to README.md
+
+### Submitting Pull Requests
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/my-new-feature`)
+3. Make your changes with tests
+4. Ensure all tests pass (`bundle exec rake spec`)
+5. Commit your changes (`git commit -am 'Add new feature'`)
+6. Push to the branch (`git push origin feature/my-new-feature`)
+7. Create a Pull Request
+
+### Code Style
+
+- Follow Ruby community style guidelines
+- Keep methods focused and single-purpose
+- Add tests for all new functionality
+- Update documentation for user-facing changes

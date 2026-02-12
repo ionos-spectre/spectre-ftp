@@ -49,6 +49,9 @@ Style/EvalWithLocation:
 Layout/SpaceInsideHashLiteralBraces:
   Enabled: false
 
+Layout/EndOfLine:
+  Enabled: false
+
 Layout/FirstHashElementIndentation:
   Enabled: false
 

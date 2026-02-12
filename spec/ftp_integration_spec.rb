@@ -13,7 +13,7 @@ require 'fileutils'
 # - Password: ftppass
 
 RSpec.describe 'FTP Integration', :integration do
-  let(:logger) { Logger.new(STDOUT) }
+  let(:logger) { Logger.new($stdout) }
   let(:client) { Spectre::FTP::Client.new({}, logger) }
   let(:test_dir) { 'test_files' }
   let(:test_file) { 'test_upload.txt' }
@@ -26,7 +26,7 @@ RSpec.describe 'FTP Integration', :integration do
 
   after(:all) do
     # Cleanup test directory
-    FileUtils.rm_rf('test_files') if Dir.exist?('test_files')
+    FileUtils.rm_rf('test_files')
   end
 
   before(:each) do
@@ -55,7 +55,7 @@ RSpec.describe 'FTP Integration', :integration do
       local_download = File.join(test_dir, 'downloaded.txt')
       remote_file = test_file
       content = test_content
-      
+
       client.ftp 'localhost', port: 2121, username: 'ftpuser', password: 'ftppass' do
         upload local_file, to: remote_file
       end
@@ -72,7 +72,7 @@ RSpec.describe 'FTP Integration', :integration do
     it 'downloads a file' do
       local_file = File.join(test_dir, test_file)
       local_retrieved = File.join(test_dir, 'retrieved.txt')
-      
+
       # First upload a file
       client.ftp 'localhost', port: 2121, username: 'ftpuser', password: 'ftppass' do
         upload local_file, to: 'download_test.txt'
@@ -89,7 +89,7 @@ RSpec.describe 'FTP Integration', :integration do
 
     it 'deletes a file' do
       local_file = File.join(test_dir, test_file)
-      
+
       # Upload a file first
       client.ftp 'localhost', port: 2121, username: 'ftpuser', password: 'ftppass' do
         upload local_file, to: 'to_delete.txt'
@@ -110,7 +110,7 @@ RSpec.describe 'FTP Integration', :integration do
 
     it 'renames a file' do
       local_file = File.join(test_dir, test_file)
-      
+
       # Upload a file first
       client.ftp 'localhost', port: 2121, username: 'ftpuser', password: 'ftppass' do
         upload local_file, to: 'old_name.txt'
@@ -136,7 +136,7 @@ RSpec.describe 'FTP Integration', :integration do
 
     it 'checks if file exists' do
       local_file = File.join(test_dir, test_file)
-      
+
       # Upload a file first
       client.ftp 'localhost', port: 2121, username: 'ftpuser', password: 'ftppass' do
         upload local_file, to: 'exists_test.txt'
@@ -159,7 +159,7 @@ RSpec.describe 'FTP Integration', :integration do
 
     it 'gets file size' do
       local_file = File.join(test_dir, test_file)
-      
+
       # Upload a file first
       client.ftp 'localhost', port: 2121, username: 'ftpuser', password: 'ftppass' do
         upload local_file, to: 'size_test.txt'
@@ -175,7 +175,7 @@ RSpec.describe 'FTP Integration', :integration do
 
     it 'gets file modification time' do
       local_file = File.join(test_dir, test_file)
-      
+
       # Upload a file first
       client.ftp 'localhost', port: 2121, username: 'ftpuser', password: 'ftppass' do
         upload local_file, to: 'mtime_test.txt'
@@ -230,21 +230,21 @@ RSpec.describe 'FTP Integration', :integration do
       current = client.ftp 'localhost', port: 2121, username: 'ftpuser', password: 'ftppass' do
         mkdir 'nav_test'
         chdir 'nav_test'
-        
+
         current_dir = pwd
 
         # Go back
         chdir '..'
-        
+
         current_dir
       end
-      
+
       expect(current).to include('nav_test')
     end
 
     it 'lists files in directory' do
       local_file = File.join(test_dir, test_file)
-      
+
       # Upload some files
       client.ftp 'localhost', port: 2121, username: 'ftpuser', password: 'ftppass' do
         upload local_file, to: 'list_test1.txt'
@@ -266,8 +266,9 @@ RSpec.describe 'FTP Integration', :integration do
     it 'performs multiple operations in sequence' do
       local_file = File.join(test_dir, test_file)
       local_result = File.join(test_dir, 'complex_result.txt')
-      
-      file_exists, size, renamed_exists, old_exists = client.ftp 'localhost', port: 2121, username: 'ftpuser', password: 'ftppass' do
+
+      file_exists, size, renamed_exists, old_exists = client.ftp 'localhost', port: 2121, username: 'ftpuser',
+                                                                              password: 'ftppass' do
         # Create directory
         mkdir 'complex_test'
         chdir 'complex_test'
@@ -293,7 +294,7 @@ RSpec.describe 'FTP Integration', :integration do
         delete 'renamed_data.txt'
         chdir '..'
         rmdir 'complex_test'
-        
+
         [file_exists, size, renamed_exists, old_exists]
       end
 

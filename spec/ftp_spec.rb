@@ -309,7 +309,7 @@ RSpec.describe 'FTP' do
       allow(response).to receive(:message).and_return('no such file')
       exception = Net::SFTP::StatusException.new(response)
       allow(exception).to receive(:description).and_return('no such file')
-      
+
       expect(@sftp_session).to receive(:stat!).with('missing.txt').and_raise(exception)
 
       result = nil

@@ -13,7 +13,7 @@ require 'fileutils'
 # - Password: sftppass
 
 RSpec.describe 'SFTP Integration', :integration do
-  let(:logger) { Logger.new(STDOUT) }
+  let(:logger) { Logger.new($stdout) }
   let(:client) { Spectre::FTP::Client.new({}, logger) }
   let(:test_dir) { 'test_files' }
   let(:test_file) { 'test_upload.txt' }
@@ -26,7 +26,7 @@ RSpec.describe 'SFTP Integration', :integration do
 
   after(:all) do
     # Cleanup test directory
-    FileUtils.rm_rf('test_files') if Dir.exist?('test_files')
+    FileUtils.rm_rf('test_files')
   end
 
   before(:each) do
@@ -55,7 +55,7 @@ RSpec.describe 'SFTP Integration', :integration do
       local_download = File.join(test_dir, 'downloaded.txt')
       remote_file = test_file
       content = test_content
-      
+
       client.sftp 'localhost', port: 2222, username: 'sftpuser', password: 'sftppass' do
         upload local_file, to: remote_file
       end
@@ -72,7 +72,7 @@ RSpec.describe 'SFTP Integration', :integration do
     it 'downloads a file' do
       local_file = File.join(test_dir, test_file)
       local_retrieved = File.join(test_dir, 'retrieved.txt')
-      
+
       # First upload a file
       client.sftp 'localhost', port: 2222, username: 'sftpuser', password: 'sftppass' do
         upload local_file, to: 'download_test.txt'
@@ -89,7 +89,7 @@ RSpec.describe 'SFTP Integration', :integration do
 
     it 'deletes a file' do
       local_file = File.join(test_dir, test_file)
-      
+
       # Upload a file first
       client.sftp 'localhost', port: 2222, username: 'sftpuser', password: 'sftppass' do
         upload local_file, to: 'to_delete.txt'
@@ -110,7 +110,7 @@ RSpec.describe 'SFTP Integration', :integration do
 
     it 'renames a file' do
       local_file = File.join(test_dir, test_file)
-      
+
       # Upload a file first
       client.sftp 'localhost', port: 2222, username: 'sftpuser', password: 'sftppass' do
         upload local_file, to: 'old_name.txt'
@@ -136,7 +136,7 @@ RSpec.describe 'SFTP Integration', :integration do
 
     it 'checks if file exists' do
       local_file = File.join(test_dir, test_file)
-      
+
       # Upload a file first
       client.sftp 'localhost', port: 2222, username: 'sftpuser', password: 'sftppass' do
         upload local_file, to: 'exists_test.txt'
@@ -159,7 +159,7 @@ RSpec.describe 'SFTP Integration', :integration do
 
     it 'gets file size' do
       local_file = File.join(test_dir, test_file)
-      
+
       # Upload a file first
       client.sftp 'localhost', port: 2222, username: 'sftpuser', password: 'sftppass' do
         upload local_file, to: 'size_test.txt'
@@ -175,7 +175,7 @@ RSpec.describe 'SFTP Integration', :integration do
 
     it 'gets file modification time' do
       local_file = File.join(test_dir, test_file)
-      
+
       # Upload a file first
       client.sftp 'localhost', port: 2222, username: 'sftpuser', password: 'sftppass' do
         upload local_file, to: 'mtime_test.txt'
@@ -193,7 +193,7 @@ RSpec.describe 'SFTP Integration', :integration do
 
     it 'gets file stat information' do
       local_file = File.join(test_dir, test_file)
-      
+
       # Upload a file first
       client.sftp 'localhost', port: 2222, username: 'sftpuser', password: 'sftppass' do
         upload local_file, to: 'stat_test.txt'
@@ -256,7 +256,7 @@ RSpec.describe 'SFTP Integration', :integration do
 
     it 'lists files in directory' do
       local_file = File.join(test_dir, test_file)
-      
+
       # Upload some files
       client.sftp 'localhost', port: 2222, username: 'sftpuser', password: 'sftppass' do
         upload local_file, to: 'list_test1.txt'
@@ -278,8 +278,13 @@ RSpec.describe 'SFTP Integration', :integration do
     it 'performs multiple operations in sequence' do
       local_file = File.join(test_dir, test_file)
       local_result = File.join(test_dir, 'complex_result.txt')
-      
-      file_exists, size, stat_size, renamed_exists, old_exists = client.sftp 'localhost', port: 2222, username: 'sftpuser', password: 'sftppass' do
+
+      file_exists, size, stat_size, renamed_exists, old_exists = client.sftp(
+        'localhost',
+        port: 2222,
+        username: 'sftpuser',
+        password: 'sftppass'
+      ) do
         # Create directory in upload folder
         mkdir 'upload/complex_test'
 
@@ -309,7 +314,7 @@ RSpec.describe 'SFTP Integration', :integration do
         # Cleanup
         delete 'upload/complex_test/renamed_data.txt'
         rmdir 'upload/complex_test'
-        
+
         [file_exists, size, stat_size, renamed_exists, old_exists]
       end
 
@@ -353,12 +358,18 @@ RSpec.describe 'SFTP Integration', :integration do
 
         # Verify deletion
         deleted = !exists('api_test.txt')
-        
+
         [file_exists, size, modification_time, deleted]
       end
 
       # Execute the same operations with SFTP
-      file_exists, size, modification_time, deleted = client.sftp 'localhost', port: 2222, username: 'sftpuser', password: 'sftppass', &operations
+      file_exists, size, modification_time, deleted = client.sftp(
+        'localhost',
+        port: 2222,
+        username: 'sftpuser',
+        password: 'sftppass',
+        &operations
+      )
 
       # Verify results
       expect(file_exists).to be true

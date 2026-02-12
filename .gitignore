@@ -5,4 +5,4 @@ tmp/
 pkg/
 temp/
 Gemfile.lock
-vendor/test_files/
+test_files/

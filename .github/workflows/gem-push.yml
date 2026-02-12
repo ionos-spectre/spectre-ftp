@@ -1,11 +1,70 @@
 name: Gem Push
 
 on:
+  workflow_call:
   push:
     tags:
-      - '*.*.*'
+      - 'v*.*.*'
 
 jobs:
-  push:
-    uses: ionos-spectre/spectre-core/.github/workflows/gem-push.yml@main
-    secrets: inherit
+  build:
+    name: Test and Build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.4'
+        bundler-cache: true
+
+    - name: Check code style
+      run: bundle exec rubocop
+
+    - name: Run tests
+      run: bundle exec rspec
+
+    - name: Build GEM
+      run: bundle exec gem build
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: gem
+        path: 'spectre-*.gem'
+
+  publish-github:
+    name: Publish to GitHub Packages
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+    - name: Download artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: gem
+
+    - name: Publish to GitHub Packages
+      run: gem push --host https://rubygems.pkg.github.com/${OWNER} *.gem
+      env:
+        OWNER: ${{ github.repository_owner }}
+        GEM_HOST_API_KEY: "Bearer ${{secrets.GITHUB_TOKEN}}"
+
+  publish-rubygems:
+    name: Publish to RubyGems
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+    - name: Download artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: gem
+
+    - name: Publish to RubyGems
+      run: gem push --host https://rubygems.org *.gem
+      env:
+        OWNER: ${{ github.repository_owner }}
+        GEM_HOST_API_KEY: ${{secrets.RUBYGEMS_API_KEY}}

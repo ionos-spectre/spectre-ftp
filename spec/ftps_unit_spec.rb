@@ -205,7 +205,7 @@ RSpec.describe 'FTPS Unit Tests' do
         upload 'test.txt'
       end
     end
-  
+
     it 'allows custom SSL options' do
       opts = [
         'test.host',

@@ -14,6 +14,45 @@ Using [net-ftp](https://github.com/ruby/net-ftp) and [net-sftp](https://www.ruby
 $ sudo gem install spectre-ftp
 ```
 
+## Development and Testing
+
+### Unit Tests
+
+Run unit tests with mocked FTP/SFTP connections:
+
+```bash
+bundle exec rspec --tag ~integration
+```
+
+### Integration Tests
+
+Integration tests use real FTP and SFTP servers running in Docker containers. See [INTEGRATION_TESTING.md](INTEGRATION_TESTING.md) for detailed instructions.
+
+Quick start:
+
+```bash
+# Start Docker servers
+docker-compose up -d
+
+# Run integration tests
+bundle exec rspec --tag integration
+
+# Stop Docker servers
+docker-compose down
+```
+
+Or use the Makefile:
+
+```bash
+make integration-test    # Run integration tests
+make unit-test          # Run unit tests only
+make test-all           # Run all tests
+```
+
+The integration tests verify all functionality against real servers:
+- **FTP** server on localhost:2121 (username: ftpuser, password: ftppass)
+- **SFTP** server on localhost:2222 (username: sftpuser, password: sftppass)
+
 
 ## Configure
 
@@ -427,6 +466,29 @@ describe 'SFTP File Operations' do
   end
 end
 ```
+
+---
+
+## Testing
+
+### Unit Tests vs Integration Tests
+
+This gem includes two types of tests:
+
+**Unit Tests** (mocked) - Fast tests that use mocked FTP/SFTP connections:
+- Located in [spec/ftp_spec.rb](spec/ftp_spec.rb)
+- Run with: `bundle exec rspec --tag ~integration`
+- No external dependencies required
+- Test the API and method signatures
+
+**Integration Tests** (real servers) - Tests against actual FTP/SFTP servers:
+- Located in [spec/ftp_integration_spec.rb](spec/ftp_integration_spec.rb) and [spec/sftp_integration_spec.rb](spec/sftp_integration_spec.rb)
+- Run with: `bundle exec rspec --tag integration`
+- Requires Docker and docker-compose
+- Tests actual file transfer operations
+- Verifies compatibility with net-ftp and net-sftp gems
+
+See [INTEGRATION_TESTING.md](INTEGRATION_TESTING.md) for detailed integration testing documentation.
 
 ---
 

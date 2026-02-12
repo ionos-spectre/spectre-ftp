@@ -127,7 +127,7 @@ RSpec.describe 'FTP' do
     end
 
     it 'checks if file exists' do
-      expect(@ftp_session).to receive(:nlst).with('file.txt').and_return(['file.txt'])
+      expect(@ftp_session).to receive(:size).with('file.txt').and_return(1024)
 
       result = nil
       @client.ftp 'test.host', username: 'user', password: 'pass' do
@@ -138,7 +138,7 @@ RSpec.describe 'FTP' do
     end
 
     it 'returns false when file does not exist' do
-      expect(@ftp_session).to receive(:nlst).with('missing.txt').and_raise(Net::FTPPermError)
+      expect(@ftp_session).to receive(:size).with('missing.txt').and_raise(Net::FTPPermError)
 
       result = nil
       @client.ftp 'test.host', username: 'user', password: 'pass' do
@@ -348,7 +348,9 @@ RSpec.describe 'FTP' do
     it 'lists files in directory' do
       entry1 = double('Entry', longname: '-rw-r--r-- 1 user group 100 Jan 1 file1.txt')
       entry2 = double('Entry', longname: 'drwxr-xr-x 2 user group 4096 Jan 2 subdir')
-      expect(@sftp_session).to receive(:dir!).with('/some/path').and_return([entry1, entry2])
+      dir_mock = double('Dir')
+      expect(@sftp_session).to receive(:dir).and_return(dir_mock)
+      expect(dir_mock).to receive(:foreach).with('/some/path').and_yield(entry1).and_yield(entry2)
 
       result = nil
       @client.sftp 'test.host', username: 'user', password: 'pass' do

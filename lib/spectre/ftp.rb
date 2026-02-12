@@ -113,7 +113,7 @@ module Spectre
       def exists path
         connect!
         begin
-          @__session.nlst(path)
+          @__session.size(path)
           true
         rescue Net::FTPPermError, Net::FTPTempError
           false
@@ -220,7 +220,7 @@ module Spectre
       def list path = '.'
         connect!
         files = []
-        @__session.dir!(path).each do |entry|
+        @__session.dir.foreach(path) do |entry|
           files << entry.longname
         end
         @__logger.info("Listing files in #{path}\n#{files}")
@@ -251,11 +251,13 @@ module Spectre
         @__session.rename!(oldname, newname)
       end
 
-      def chdir path
-        connect!
-        @__logger.info("Changing directory to '#{path}'")
-        @__session.setstat!(path, {})
-      end
+      # # SFTP is stateless and doesn't have a concept of current directory
+      # # All operations use absolute paths or paths relative to the user's home directory
+      # # This method is a no-op for API compatibility with FTP
+      # def chdir path
+      #   connect!
+      #   @__logger.info("Note: SFTP is stateless - paths are always absolute or relative to home directory")
+      # end
 
       def pwd
         connect!

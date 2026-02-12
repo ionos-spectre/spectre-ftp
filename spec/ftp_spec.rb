@@ -368,7 +368,7 @@ RSpec.describe 'FTP' do
         'some-data.host',
         {
           port: 990,
-          ssl: true,
+          ssl: { implicit: true },
         }
       ]
 
@@ -409,7 +409,7 @@ RSpec.describe 'FTP' do
         'test.host',
         {
           port: 990,
-          ssl: true,
+          ssl: { implicit: true },
         }
       ]
 
@@ -533,6 +533,77 @@ RSpec.describe 'FTP' do
       end
 
       expect(result).to eq(files)
+    end
+  end
+
+  context 'ftps ssl configuration' do
+    it 'uses implicit SSL by default' do
+      opts = [
+        'test.host',
+        {
+          port: 990,
+          ssl: { implicit: true },
+        }
+      ]
+
+      ftp_session = double(Net::FTP)
+      expect(Net::FTP).to receive(:new).with(*opts).and_return(ftp_session)
+      expect(ftp_session).to receive(:closed?)
+      expect(ftp_session).to receive(:close)
+      expect(ftp_session).to receive(:login).with('user', 'pass')
+      expect(ftp_session).to receive(:pwd).and_return('/home/user')
+      expect(ftp_session).to receive(:putbinaryfile).with('test.txt', 'test.txt')
+
+      client = Spectre::FTP::Client.new({}, Logger.new(StringIO.new))
+      client.ftps 'test.host', username: 'user', password: 'pass' do
+        upload 'test.txt'
+      end
+    end
+
+    it 'allows explicit SSL override' do
+      opts = [
+        'test.host',
+        {
+          port: 21,
+          ssl: true,
+        }
+      ]
+
+      ftp_session = double(Net::FTP)
+      expect(Net::FTP).to receive(:new).with(*opts).and_return(ftp_session)
+      expect(ftp_session).to receive(:closed?)
+      expect(ftp_session).to receive(:close)
+      expect(ftp_session).to receive(:login).with('user', 'pass')
+      expect(ftp_session).to receive(:pwd).and_return('/home/user')
+      expect(ftp_session).to receive(:putbinaryfile).with('test.txt', 'test.txt')
+
+      client = Spectre::FTP::Client.new({}, Logger.new(StringIO.new))
+      client.ftps 'test.host', username: 'user', password: 'pass', ssl: true, port: 21 do
+        upload 'test.txt'
+      end
+    end
+
+    it 'allows custom SSL options' do
+      opts = [
+        'test.host',
+        {
+          port: 990,
+          ssl: { implicit: true, verify_mode: 0 },
+        }
+      ]
+
+      ftp_session = double(Net::FTP)
+      expect(Net::FTP).to receive(:new).with(*opts).and_return(ftp_session)
+      expect(ftp_session).to receive(:closed?)
+      expect(ftp_session).to receive(:close)
+      expect(ftp_session).to receive(:login).with('user', 'pass')
+      expect(ftp_session).to receive(:pwd).and_return('/home/user')
+      expect(ftp_session).to receive(:putbinaryfile).with('test.txt', 'test.txt')
+
+      client = Spectre::FTP::Client.new({}, Logger.new(StringIO.new))
+      client.ftps 'test.host', username: 'user', password: 'pass', ssl: { implicit: true, verify_mode: 0 } do
+        upload 'test.txt'
+      end
     end
   end
 end

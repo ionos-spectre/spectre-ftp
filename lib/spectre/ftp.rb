@@ -292,7 +292,7 @@ module Spectre
       end
 
       def ftps(name, config = {}, &)
-        config[:ssl] = true
+        config[:ssl] ||= { implicit: true }
         config[:port] ||= 990
 
         ftp(name, config, &)

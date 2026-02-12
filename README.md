@@ -68,7 +68,8 @@ ftp:
     username: testuser
     password: secretpass
     port: 990  # Default FTPS port (implicit SSL)
-    ssl: true  # Enable SSL/TLS (default for ftps() method)
+    ssl:
+      implicit: true  # Implicit SSL (default for ftps() method)
   
   my-sftp-server:
     host: sftp.example.com
@@ -691,12 +692,27 @@ end
 ## FTPS Operations
 
 FTPS (FTP over SSL/TLS) provides secure file transfer using SSL/TLS encryption. 
-The `ftps()` method uses the same operations as `ftp()` but enables SSL by default and uses port 990 (the standard FTPS implicit SSL port).
+The `ftps()` method uses **implicit SSL** by default, where the SSL connection is established immediately.
+
+### Understanding FTPS Modes
+
+There are two FTPS modes:
+
+1. **Implicit FTPS** (default, port 990):
+   - SSL/TLS connection established immediately upon connection
+   - Used by `ftps()` method by default
+   - Configuration: `ssl: { implicit: true }`
+
+2. **Explicit FTPS** (port 21):
+   - Connection starts as plain FTP, then upgrades to SSL/TLS using AUTH TLS command
+   - Also called FTPES or "explicit TLS"
+   - Configuration: `ssl: true`
 
 ### Connecting to FTPS Server
 
 ```ruby
 it 'connects to FTPS server' do
+  # Uses port 990 and implicit SSL
   ftps 'my-ftps-server' do
     can_connect = can_connect?
     
@@ -710,12 +726,22 @@ end
 ```yaml
 # environments/production.env.yml
 ftp:
+  # Implicit FTPS (default)
   my-ftps-server:
     host: ftps.example.com
     username: secureuser
     password: securepass
-    port: 990  # default FTPS port, can be omitted
-    ssl: true  # default for ftps(), can be omitted
+    port: 990  # default for implicit FTPS, can be omitted
+    ssl:
+      implicit: true  # default for ftps()
+  
+  # Explicit FTPS (if needed)
+  explicit-ftps-server:
+    host: ftp.example.com
+    username: user
+    password: pass
+    port: 21
+    ssl: true  # or ssl: { } for explicit mode
 ```
 
 ### Uploading Files via FTPS
@@ -726,6 +752,33 @@ it 'uploads sensitive file via FTPS' do
   
   ftps 'my-ftps-server' do
     upload 'confidential.txt'
+  end
+end
+```
+
+### Using Explicit FTPS
+
+If you need explicit FTPS (AUTH TLS) instead of implicit SSL:
+
+```ruby
+it 'uses explicit FTPS' do
+  ftps 'explicit-server', ssl: true, port: 21 do
+    upload 'file.txt'
+  end
+end
+```
+
+### Custom SSL Options
+
+You can pass additional SSL options for certificate verification, ciphers, etc.:
+
+```ruby
+it 'connects with custom SSL options' do
+  ftps 'secure-server', ssl: { 
+    implicit: true, 
+    verify_mode: OpenSSL::SSL::VERIFY_NONE  # Skip certificate verification
+  } do
+    upload 'data.json'
   end
 end
 ```

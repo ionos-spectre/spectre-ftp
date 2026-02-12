@@ -24,7 +24,7 @@ jobs:
       run: bundle exec rubocop
 
     - name: Run tests
-      run: bundle exec rspec
+      run: bundle exec rake spec_unit
 
     - name: Build GEM
       run: bundle exec gem build

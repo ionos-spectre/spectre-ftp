@@ -292,8 +292,17 @@ module Spectre
       end
 
       def ftps(name, config = {}, &)
-        config[:ssl] ||= { implicit: true }
+        config[:ssl] = true
         config[:port] ||= 990
+        config[:implicit] = true
+
+        ftp(name, config, &)
+      end
+
+      def ftpes(name, config = {}, &)
+        config[:ssl] = true
+        config[:port] ||= 21
+        config[:implicit] = false
 
         ftp(name, config, &)
       end
@@ -306,7 +315,8 @@ module Spectre
         password = config.delete(:password) || cfg['password']
 
         config[:port] = config[:port] || cfg['port'] || 21
-        config[:ssl] = config[:ssl] || cfg['ssl']
+        config[:ssl] = config[:ssl] || cfg['ssl'] || false
+        config[:implicit_ftps] = config.delete(:implicit) || cfg['implicit'] || false
 
         ftp_conn = FTPConnection.new(hostname, username, password, config, @logger)
 
@@ -346,5 +356,5 @@ module Spectre
     end
   end
 
-  Engine.register(FTP::Client, :ftp, :sftp, :ftps) if defined? Engine
+  Engine.register(FTP::Client, :ftp, :sftp, :ftps, :ftpes) if defined? Engine
 end

@@ -1,6 +1,8 @@
 .vscode/
+.bundle/
 **/*.log
 tmp/
 pkg/
 temp/
 Gemfile.lock
+vendor/

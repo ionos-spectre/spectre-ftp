@@ -107,6 +107,73 @@ it 'lists files on FTP server' do
   
   assert file_list.to_not be_empty
 end
+
+it 'lists files in specific directory' do
+  ftp 'my-ftp-server' do
+    file_list = list('/remote/path')
+    
+    info "Files in /remote/path: #{file_list}"
+  end
+end
+```
+
+### Directory Operations
+
+```ruby
+it 'creates and removes directories' do
+  ftp 'my-ftp-server' do
+    # Create a new directory
+    mkdir 'new-folder'
+    
+    # Change to the directory
+    chdir 'new-folder'
+    
+    # Get current directory
+    current = pwd
+    info "Current directory: #{current}"
+    
+    # Go back
+    chdir '..'
+    
+    # Remove the directory
+    rmdir 'new-folder'
+  end
+end
+```
+
+### File Management
+
+```ruby
+it 'deletes and renames files' do
+  ftp 'my-ftp-server' do
+    # Delete a file
+    delete 'old-file.txt'
+    
+    # Rename a file
+    rename 'file.txt', 'renamed-file.txt'
+  end
+end
+```
+
+### File Information
+
+```ruby
+it 'gets file information' do
+  ftp 'my-ftp-server' do
+    # Check if file exists
+    if exists 'data.csv'
+      info 'File exists'
+      
+      # Get file size
+      size = file_size 'data.csv'
+      info "File size: #{size} bytes"
+      
+      # Get modification time
+      modified = mtime 'data.csv'
+      info "Last modified: #{modified}"
+    end
+  end
+end
 ```
 
 ### Complete FTP Test Example
@@ -236,6 +303,71 @@ it 'checks if remote file exists' do
 end
 ```
 
+### Directory Operations
+
+```ruby
+it 'manages directories' do
+  sftp 'my-sftp-server' do
+    # Create a new directory
+    mkdir '/remote/new-folder'
+    
+    # Get current directory
+    current = pwd
+    info "Current directory: #{current}"
+    
+    # Remove the directory
+    rmdir '/remote/new-folder'
+  end
+end
+```
+
+### File Management
+
+```ruby
+it 'deletes and renames files' do
+  sftp 'my-sftp-server' do
+    # Delete a file
+    delete '/remote/old-file.txt'
+    
+    # Rename a file
+    rename '/remote/file.txt', '/remote/renamed-file.txt'
+  end
+end
+```
+
+### Listing Files
+
+```ruby
+it 'lists files in directory' do
+  sftp 'my-sftp-server' do
+    files = list '/remote/path'
+    
+    files.each do |file|
+      info file
+    end
+  end
+end
+```
+
+### File Size and Modification Time
+
+```ruby
+it 'gets file metadata' do
+  sftp 'my-sftp-server' do
+    # Check if file exists
+    if exists '/remote/data.csv'  
+      # Get file size
+      size = file_size '/remote/data.csv'
+      info "File size: #{size} bytes"
+      
+      # Get modification time
+      modified = mtime '/remote/data.csv'
+      info "Last modified: #{modified}"
+    end
+  end
+end
+```
+
 ### Complete SFTP Test Example
 
 ```ruby
@@ -295,6 +427,132 @@ describe 'SFTP File Operations' do
   end
 end
 ```
+
+---
+
+## Consistent API for FTP and SFTP
+
+One of the key features of this module is that **FTP and SFTP methods work exactly the same way**, making it easy to switch between protocols or test both without changing your code.
+
+### Example: Same Operations for Both Protocols
+
+```ruby
+describe 'File Operations Work Identically' do
+  let(:test_file) { 'test-file.txt' }
+  let(:remote_file) { 'uploaded.txt' }
+  
+  setup do
+    File.write(test_file, 'Test content')
+  end
+  
+  teardown do
+    File.delete(test_file) if File.exist?(test_file)
+    File.delete('downloaded.txt') if File.exist?('downloaded.txt')
+  end
+  
+  # Test with FTP
+  it 'performs file operations via FTP' do
+    ftp 'my-server' do
+      # Create directory
+      mkdir 'test-dir'
+      
+      # Upload file
+      upload test_file, to: remote_file
+      
+      # Check if exists
+      assert (exists remote_file).to be true
+      
+      # Get file info
+      size = file_size remote_file
+      expect size.to be_greater_than 0
+      
+      # Rename file
+      rename remote_file, 'renamed.txt'
+      
+      # List files
+      files = list
+      expect files.to_not be_empty
+      
+      # Download file
+      download 'renamed.txt', to: 'downloaded.txt'
+      
+      # Cleanup
+      delete 'renamed.txt'
+      rmdir 'test-dir'
+    end
+  end
+  
+  # Same test with SFTP - only the connection method changes!
+  it 'performs identical operations via SFTP' do
+    sftp 'my-server' do
+      # Create directory
+      mkdir 'test-dir'
+      
+      # Upload file
+      upload test_file, to: remote_file
+      
+      # Check if exists
+      assert (exists remote_file).to be true
+      
+      # Get file info
+      size = file_size remote_file
+      expect size.to be_greater_than 0
+      
+      # Rename file
+      rename remote_file, 'renamed.txt'
+      
+      # List files
+      files = list
+      expect files.to_not be_empty
+      
+      # Download file
+      download 'renamed.txt', to: 'downloaded.txt'
+      
+      # Cleanup
+      delete 'renamed.txt'
+      rmdir 'test-dir'
+    end
+  end
+end
+```
+
+As you can see, the only difference between FTP and SFTP tests is whether you use `ftp` or `sftp` to initiate the connection. All file operations use the exact same method names and parameters.
+
+---
+
+## API Reference
+
+### Common Methods Available for Both FTP and SFTP
+
+All methods below work identically for both `ftp` and `sftp` connections:
+
+| Method | Parameters | Description | Returns |
+|--------|-----------|-------------|---------|
+| `connect!` | - | Manually establish connection | - |
+| `close` | - | Close the connection | - |
+| `can_connect?` | - | Test if connection can be established | Boolean |
+| `upload` | `localfile, to: remote_name` | Upload a file to server | - |
+| `download` | `remotefile, to: local_name` | Download a file from server | - |
+| `list` | `path = nil` (FTP) or `path = '.'` (SFTP) | List files in directory | Array of strings |
+| `mkdir` | `dirname` | Create a directory | - |
+| `rmdir` | `dirname` | Remove a directory | - |
+| `delete` | `filename` | Delete a file | - |
+| `rename` | `oldname, newname` | Rename or move a file | - |
+| `chdir` | `path` | Change current directory | - |
+| `pwd` | - | Get current directory | String |
+| `exists` | `path` | Check if file/directory exists | Boolean |
+| `file_size` | `filename` | Get file size | Integer (bytes) |
+| `mtime` | `filename` | Get modification time | Time |
+
+### SFTP-Specific Methods
+
+These methods are available only for SFTP connections:
+
+| Method | Parameters | Description | Returns |
+|--------|-----------|-------------|---------|
+| `stat` | `path` | Get detailed file attributes | Hash with :size, :mtime, :permissions, etc. |
+| `private_key` | `file_path` | Set SSH private key for authentication | - |
+| `passphrase` | `phrase` | Set passphrase for encrypted keys | - |
 
 ---
 
@@ -474,13 +732,29 @@ end
 
 ## Summary
 
-The FTP module provides simple methods to:
+The FTP module provides comprehensive methods for both FTP and SFTP operations:
 
-✅ Upload files to FTP/SFTP servers  
-✅ Download files from FTP/SFTP servers  
-✅ List files on remote servers  
-✅ Check file existence and properties  
-✅ Test connection to FTP/SFTP servers  
-✅ Use password or SSH key authentication  
+### File Operations
+✅ **upload** - Upload files to FTP/SFTP servers  
+✅ **download** - Download files from FTP/SFTP servers  
+✅ **delete** - Delete files on remote servers  
+✅ **rename** - Rename or move files on remote servers  
+✅ **exists** - Check if a file or directory exists  
+✅ **file_size** - Get the size of a file in bytes  
+✅ **mtime** - Get the last modification time of a file  
 
-Use this module to test any system that transfers files via FTP or SFTP, including data exports, report generation, and partner integrations.
+### Directory Operations
+✅ **mkdir** - Create a new directory  
+✅ **rmdir** - Remove an empty directory  
+✅ **chdir** - Change current directory (FTP)  
+✅ **pwd** - Get current working directory  
+✅ **list** - List files and directories  
+
+### Connection Operations
+✅ **can_connect?** - Test connection to FTP/SFTP servers  
+✅ Use password or SSH key authentication (SFTP)  
+
+### Additional SFTP Methods
+✅ **stat** - Get detailed file attributes and permissions  
+
+All methods work consistently across both FTP and SFTP implementations, making it easy to switch between protocols without changing your test code.

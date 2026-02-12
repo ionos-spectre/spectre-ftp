@@ -66,11 +66,72 @@ module Spectre
         @__session.putbinaryfile(localfile, to)
       end
 
-      def list
+      def list path = nil
         connect!
-        file_list = @__session.list
-        @__logger.info("Listing files in #{@__session.pwd}\n#{file_list}")
+        file_list = path ? @__session.list(path) : @__session.list
+        @__logger.info("Listing files in #{path || @__session.pwd}\n#{file_list}")
         file_list
+      end
+
+      def mkdir dirname
+        connect!
+        @__logger.info("Creating directory '#{dirname}' in #{@__session.pwd}")
+        @__session.mkdir(dirname)
+      end
+
+      def rmdir dirname
+        connect!
+        @__logger.info("Removing directory '#{dirname}' in #{@__session.pwd}")
+        @__session.rmdir(dirname)
+      end
+
+      def delete filename
+        connect!
+        @__logger.info("Deleting file '#{filename}' in #{@__session.pwd}")
+        @__session.delete(filename)
+      end
+
+      def rename oldname, newname
+        connect!
+        @__logger.info("Renaming '#{oldname}' to '#{newname}' in #{@__session.pwd}")
+        @__session.rename(oldname, newname)
+      end
+
+      def chdir path
+        connect!
+        @__logger.info("Changing directory to '#{path}'")
+        @__session.chdir(path)
+      end
+
+      def pwd
+        connect!
+        current_dir = @__session.pwd
+        @__logger.info("Current directory: #{current_dir}")
+        current_dir
+      end
+
+      def exists path
+        connect!
+        begin
+          @__session.nlst(path)
+          true
+        rescue Net::FTPPermError, Net::FTPTempError
+          false
+        end
+      end
+
+      def file_size filename
+        connect!
+        size = @__session.size(filename)
+        @__logger.info("File size of '#{filename}': #{size} bytes")
+        size
+      end
+
+      def mtime filename
+        connect!
+        modification_time = @__session.mtime(filename)
+        @__logger.info("Modification time of '#{filename}': #{modification_time}")
+        modification_time
       end
     end
 
@@ -144,6 +205,7 @@ module Spectre
       end
 
       def exists path
+        connect!
         begin
           @__session.stat! path
         rescue Net::SFTP::StatusException => e
@@ -153,6 +215,69 @@ module Spectre
         end
 
         true
+      end
+
+      def list path = '.'
+        connect!
+        files = []
+        @__session.dir!(path).each do |entry|
+          files << entry.longname
+        end
+        @__logger.info("Listing files in #{path}\n#{files}")
+        files
+      end
+
+      def mkdir dirname
+        connect!
+        @__logger.info("Creating directory '#{dirname}'")
+        @__session.mkdir!(dirname)
+      end
+
+      def rmdir dirname
+        connect!
+        @__logger.info("Removing directory '#{dirname}'")
+        @__session.rmdir!(dirname)
+      end
+
+      def delete filename
+        connect!
+        @__logger.info("Deleting file '#{filename}'")
+        @__session.remove!(filename)
+      end
+
+      def rename oldname, newname
+        connect!
+        @__logger.info("Renaming '#{oldname}' to '#{newname}'")
+        @__session.rename!(oldname, newname)
+      end
+
+      def chdir path
+        connect!
+        @__logger.info("Changing directory to '#{path}'")
+        @__session.setstat!(path, {})
+      end
+
+      def pwd
+        connect!
+        current_dir = @__session.realpath!('.')
+        @__logger.info("Current directory: #{current_dir.name}")
+        current_dir.name
+      end
+
+      def file_size filename
+        connect!
+        stat_info = @__session.stat!(filename)
+        size = stat_info.size
+        @__logger.info("File size of '#{filename}': #{size} bytes")
+        size
+      end
+
+      def mtime filename
+        connect!
+        stat_info = @__session.stat!(filename)
+        modification_time = Time.at(stat_info.mtime)
+        @__logger.info("Modification time of '#{filename}': #{modification_time}")
+        modification_time
       end
     end
 

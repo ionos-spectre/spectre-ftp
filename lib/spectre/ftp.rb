@@ -320,23 +320,22 @@ module Spectre
       def sftp(name, config = {}, &)
         cfg = @config[name] || {}
 
-        host = config[:host] || cfg['host'] || name
-        username = config[:username] || cfg['username']
-        password = config[:password] || cfg['password']
+        host = config.delete(:host) || cfg['host'] || name
+        username = config.delete(:username) || cfg['username']
+        password = config.delete(:password) || cfg['password']
 
-        opts = {}
-        opts[:password] = password
-        opts[:port] = config[:port] || cfg['port'] || 22
-        opts[:keys] = [cfg['key']] if cfg.key? 'key'
-        opts[:passphrase] = cfg['passphrase'] if cfg.key? 'passphrase'
+        config[:password] = password
+        config[:port] ||= cfg['port'] || 22
+        config[:keys] = [cfg['key']] if cfg.key? 'key'
+        config[:passphrase] = cfg['passphrase'] if cfg.key? 'passphrase'
 
-        opts[:auth_methods] = []
-        opts[:auth_methods].push 'publickey' if opts[:keys]
-        opts[:auth_methods].push 'password' if opts[:password]
+        config[:auth_methods] = []
+        config[:auth_methods].push 'publickey' if config[:keys]
+        config[:auth_methods].push 'password' if config[:password]
 
-        opts[:non_interactive] = true
+        config[:non_interactive] = true
 
-        sftp_con = SFTPConnection.new(host, username, opts, @logger)
+        sftp_con = SFTPConnection.new(host, username, config, @logger)
 
         begin
           sftp_con.instance_eval(&)
@@ -347,5 +346,5 @@ module Spectre
     end
   end
 
-  Engine.register(FTP::Client, :ftp, :sftp) if defined? Engine
+  Engine.register(FTP::Client, :ftp, :sftp, :ftps) if defined? Engine
 end

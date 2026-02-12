@@ -291,18 +291,24 @@ module Spectre
         @logger = logger
       end
 
+      def ftps(name, config = {}, &)
+        config[:ssl] = true
+        config[:port] ||= 990
+
+        ftp(name, config, &)
+      end
+
       def ftp(name, config = {}, &)
         cfg = @config[name] || {}
 
-        host = config[:host] || cfg['host'] || name
-        username = config[:username] || cfg['username']
-        password = config[:password] || cfg['password']
+        hostname = config.delete(:host) || cfg['host'] || name
+        username = config.delete(:username) || cfg['username']
+        password = config.delete(:password) || cfg['password']
 
-        opts = {}
-        opts[:ssl] = config[:ssl]
-        opts[:port] = config[:port] || cfg['port'] || 21
+        config[:port] = config[:port] || cfg['port'] || 21
+        config[:ssl] = config[:ssl] || cfg['ssl']
 
-        ftp_conn = FTPConnection.new(host, username, password, opts, @logger)
+        ftp_conn = FTPConnection.new(hostname, username, password, config, @logger)
 
         begin
           ftp_conn.instance_eval(&)

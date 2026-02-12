@@ -3,7 +3,12 @@
 [![Build](https://github.com/ionos-spectre/spectre-ftp/actions/workflows/build.yml/badge.svg)](https://github.com/ionos-spectre/spectre-ftp/actions/workflows/build.yml)
 [![Gem Version](https://badge.fury.io/rb/spectre-ftp.svg)](https://badge.fury.io/rb/spectre-ftp)
 
-This is a [spectre](https://github.com/ionos-spectre/spectre-core) module which allows you to test file transfer operations using FTP (File Transfer Protocol) and SFTP (Secure FTP). This is useful for testing systems that upload or download files from FTP servers.
+This is a [spectre](https://github.com/ionos-spectre/spectre-core) module which allows you to test file transfer operations using:
+- **FTP** (File Transfer Protocol)
+- **FTPS** (FTP over SSL/TLS)
+- **SFTP** (SSH File Transfer Protocol)
+
+This is useful for testing systems that upload or download files from FTP servers.
 
 Using [net-ftp](https://github.com/ruby/net-ftp) and [net-sftp](https://www.rubydoc.info/gems/net-sftp/2.0.5/Net/SFTP).
 
@@ -47,7 +52,7 @@ include:
  - spectre/ftp
 ```
 
-Configure your FTP/SFTP servers in your environment file:
+Configure your FTP/SFTP/FTPS servers in your environment file:
 
 ```yaml
 # environments/development.env.yml
@@ -57,6 +62,13 @@ ftp:
     username: testuser
     password: secretpass
     port: 21
+  
+  my-ftps-server:
+    host: ftps.example.com
+    username: testuser
+    password: secretpass
+    port: 990  # Default FTPS port (implicit SSL)
+    ssl: true  # Enable SSL/TLS (default for ftps() method)
   
   my-sftp-server:
     host: sftp.example.com
@@ -670,6 +682,162 @@ describe 'FTP Server Availability' do
       
       assert can_connect.to be true
     end
+  end
+end
+```
+
+---
+
+## FTPS Operations
+
+FTPS (FTP over SSL/TLS) provides secure file transfer using SSL/TLS encryption. 
+The `ftps()` method uses the same operations as `ftp()` but enables SSL by default and uses port 990 (the standard FTPS implicit SSL port).
+
+### Connecting to FTPS Server
+
+```ruby
+it 'connects to FTPS server' do
+  ftps 'my-ftps-server' do
+    can_connect = can_connect?
+    
+    assert can_connect.to be true
+  end
+end
+```
+
+### Configuring FTPS in Environment File
+
+```yaml
+# environments/production.env.yml
+ftp:
+  my-ftps-server:
+    host: ftps.example.com
+    username: secureuser
+    password: securepass
+    port: 990  # default FTPS port, can be omitted
+    ssl: true  # default for ftps(), can be omitted
+```
+
+### Uploading Files via FTPS
+
+```ruby
+it 'uploads sensitive file via FTPS' do
+  File.write('confidential.txt', 'Sensitive data')
+  
+  ftps 'my-ftps-server' do
+    upload 'confidential.txt'
+  end
+end
+```
+
+### Downloading Files via FTPS
+
+```ruby
+it 'downloads encrypted backup' do
+  ftps 'backup-server' do
+    download 'backup-2024.tar.gz', to: 'local-backup.tar.gz'
+  end
+  
+  assert File.exist?('local-backup.tar.gz').to be true
+end
+```
+
+### All FTP Operations Work with FTPS
+
+All operations available for `ftp()` work identically with `ftps()`:
+
+- **Directory Operations**: `mkdir`, `rmdir`, `chdir`, `pwd`
+- **File Operations**: `upload`, `download`, `delete`, `rename`
+- **File Information**: `exists`, `file_size`, `mtime`, `list`
+- **Connection Testing**: `can_connect?`
+
+```ruby
+it 'performs secure file operations' do
+  ftps 'secure-server' do
+    # Create directory
+    mkdir 'secure-data'
+    chdir 'secure-data'
+    
+    # Upload file
+    upload 'data.json'
+    
+    # Verify file exists
+    assert exists('data.json').to be true
+    
+    # Check file size
+    size = file_size 'data.json'
+    info "Uploaded file size: #{size} bytes"
+    
+    # Get modification time
+    modified = mtime 'data.json'
+    info "Last modified: #{modified}"
+  end
+end
+```
+
+### Using Custom Port with FTPS
+
+```ruby
+it 'connects to FTPS on custom port' do
+  ftps 'custom-server', port: 2990 do
+    # Operations here will use port 2990 with SSL
+    can_connect = can_connect?
+    
+    assert can_connect.to be true
+  end
+end
+```
+
+### Disabling SSL (for explicit FTPS or testing)
+
+```ruby
+it 'connects with SSL disabled' do
+  ftps 'test-server', ssl: false do
+    # This will behave like regular FTP
+    upload 'test.txt'
+  end
+end
+```
+
+### Complete FTPS Example
+
+```ruby
+describe 'Secure File Transfer' do
+  setup do
+    bag.secure_file = "secure_#{uuid}.txt"
+    File.write(bag.secure_file, 'Confidential content')
+  end
+  
+  teardown do
+    File.delete(bag.secure_file) if File.exist?(bag.secure_file)
+    File.delete('downloaded-secure.txt') if File.exist?('downloaded-secure.txt')
+  end
+  
+  it 'securely transfers files via FTPS' do
+    # Upload encrypted
+    ftps 'secure-server' do
+      upload bag.secure_file, to: 'encrypted-upload.txt'
+      
+      # Verify upload
+      assert exists('encrypted-upload.txt').to be true
+      
+      size = file_size 'encrypted-upload.txt'
+      info "Uploaded file size: #{size} bytes"
+    end
+    
+    # Download encrypted
+    ftps 'secure-server' do
+      download 'encrypted-upload.txt', to: 'downloaded-secure.txt'
+      
+      # Clean up remote file
+      delete 'encrypted-upload.txt'
+    end
+    
+    # Verify content
+    original = File.read(bag.secure_file)
+    downloaded = File.read('downloaded-secure.txt')
+    
+    assert downloaded.to be original
   end
 end
 ```

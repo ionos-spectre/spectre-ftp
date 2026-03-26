@@ -85,8 +85,8 @@ The gem consists of a single main file: [lib/spectre/ftp.rb](lib/spectre/ftp.rb)
 ### Connection Methods
 
 - **`ftp(name, config = {}, &block)`** - Plain FTP (port 21, no SSL)
-- **`ftps(name, ca_file, config = {}, &block)`** - Implicit SSL (port 990)
-- **`ftpes(name, ca_file, config = {}, &block)`** - Explicit SSL (port 21)
+- **`ftps(name, ca_file = nil, config = {}, &block)`** - Implicit SSL (port 990)
+- **`ftpes(name, ca_file = nil, config = {}, &block)`** - Explicit SSL (port 21)
 - **`sftp(name, config = {}, &block)`** - SFTP over SSH (port 22)
 
 All methods:

@@ -2,7 +2,7 @@
 
 #### Minor
  - restructure and update documentation
- - add CA file support for FTPS and FTPES connections
+ - add optional CA file support for FTPS and FTPES connections (backward compatible)
  - code style fixes
 
 ### v2.0.2

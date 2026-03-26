@@ -649,27 +649,41 @@ These methods are available only for SFTP connections:
 
 ## FTPS and FTPES - Secure FTP Operations
 
-This module provides two secure FTP variants that use the same operations as `ftp()` but with SSL/TLS encryption. Both require a `ca_file` parameter pointing to the CA certificate used to verify the server's SSL certificate.
+This module provides two secure FTP variants that use the same operations as `ftp()` but with SSL/TLS encryption. Both accept an optional `ca_file` parameter pointing to the CA certificate used to verify the server's SSL certificate. When `ca_file` is provided, `verify_mode` defaults to `VERIFY_PEER`. When omitted, SSL is enabled without certificate verification (backward compatible with previous versions).
 
 The `ftps()` method establishes an SSL/TLS connection immediately upon connecting. This is also known as "implicit FTPS".
 
 ```ruby
+# With CA file (recommended for production)
 ftps 'my-server', '/path/to/ca-cert.pem' do
+  upload 'file.txt'
+end
+
+# Without CA file (no certificate verification)
+ftps 'my-server' do
   upload 'file.txt'
 end
 ```
 
-**Settings:** `port: 990`, `ssl: { ca_file: ca_file, verify_mode: VERIFY_PEER }`, `implicit: true`
+**Settings with CA file:** `port: 990`, `ssl: { ca_file: ca_file, verify_mode: VERIFY_PEER }`, `implicit: true`
+**Settings without CA file:** `port: 990`, `ssl: true`, `implicit: true`
 
 The `ftpes()` method starts as a plain FTP connection, then upgrades to SSL/TLS using the AUTH TLS command. This is also known as "explicit FTPS" or "FTPES".
 
 ```ruby
+# With CA file (recommended for production)
 ftpes 'my-server', '/path/to/ca-cert.pem' do
+  upload 'file.txt'
+end
+
+# Without CA file (no certificate verification)
+ftpes 'my-server' do
   upload 'file.txt'
 end
 ```
 
-**Settings:** `port: 21`, `ssl: { ca_file: ca_file, verify_mode: VERIFY_PEER }`, `implicit: false`
+**Settings with CA file:** `port: 21`, `ssl: { ca_file: ca_file, verify_mode: VERIFY_PEER }`, `implicit: false`
+**Settings without CA file:** `port: 21`, `ssl: true`, `implicit: false`
 
 You can override the port and SSL verify mode via the config hash, but the SSL method will be forced as described. If you want full control over the options use `ftp()`
 

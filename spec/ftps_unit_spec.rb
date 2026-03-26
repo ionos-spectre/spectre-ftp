@@ -207,13 +207,14 @@ RSpec.describe 'FTPS Unit Tests' do
     end
 
     it 'allows custom SSL options' do
-      opts = [
-        'test.host',
-        DEFAULT_FTPS_OPTS
-      ]
+      custom_opts = {
+        port: 990,
+        ssl: { ca_file: 'path/to/ca_file', verify_mode: OpenSSL::SSL::VERIFY_NONE },
+        implicit_ftps: true
+      }
 
       ftp_session = double(Net::FTP)
-      expect(Net::FTP).to receive(:new).with(*opts).and_return(ftp_session)
+      expect(Net::FTP).to receive(:new).with('test.host', custom_opts).and_return(ftp_session)
       expect(ftp_session).to receive(:closed?)
       expect(ftp_session).to receive(:close)
       expect(ftp_session).to receive(:login).with('user', 'pass')
@@ -221,7 +222,8 @@ RSpec.describe 'FTPS Unit Tests' do
       expect(ftp_session).to receive(:putbinaryfile).with('test.txt', 'test.txt')
 
       client = Spectre::FTP::Client.new({}, Logger.new(StringIO.new))
-      client.ftps 'test.host', 'path/to/ca_file', username: 'user', password: 'pass', ssl: { verify_mode: 1 } do
+      client.ftps 'test.host', 'path/to/ca_file', username: 'user', password: 'pass',
+                                                  ssl: { verify_mode: OpenSSL::SSL::VERIFY_NONE } do
         upload 'test.txt'
       end
     end

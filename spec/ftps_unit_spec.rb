@@ -10,8 +10,8 @@ CONFIG = {
 
 DEFAULT_FTPS_OPTS = {
   port: 990,
-  ssl: true,
-  implicit_ftps: true,
+  ssl: { ca_file: 'path/to/ca_file', verify_mode: OpenSSL::SSL::VERIFY_PEER },
+  implicit_ftps: true
 }
 
 require_relative '../lib/spectre/ftp'
@@ -41,7 +41,7 @@ RSpec.describe 'FTPS Unit Tests' do
     end
 
     it 'does upload a file via ftps' do
-      @client.ftps 'some-data.host' do
+      @client.ftps 'some-data.host', 'path/to/ca_file' do
         username 'dummy'
         password '<some-secret-password>'
         upload 'dummy.txt'
@@ -49,7 +49,7 @@ RSpec.describe 'FTPS Unit Tests' do
     end
 
     it 'does upload a file via ftps with preconfig' do
-      @client.ftps 'example' do
+      @client.ftps 'example', 'path/to/ca_file' do
         upload 'dummy.txt'
       end
     end
@@ -75,7 +75,7 @@ RSpec.describe 'FTPS Unit Tests' do
       expect(@ftp_session).to receive(:pwd).and_return('/home/user')
       expect(@ftp_session).to receive(:mkdir).with('testdir')
 
-      @client.ftps 'test.host', username: 'user', password: 'pass' do
+      @client.ftps 'test.host', 'path/to/ca_file', username: 'user', password: 'pass' do
         mkdir 'testdir'
       end
     end
@@ -84,7 +84,7 @@ RSpec.describe 'FTPS Unit Tests' do
       expect(@ftp_session).to receive(:pwd).and_return('/home/user')
       expect(@ftp_session).to receive(:rmdir).with('testdir')
 
-      @client.ftps 'test.host', username: 'user', password: 'pass' do
+      @client.ftps 'test.host', 'path/to/ca_file', username: 'user', password: 'pass' do
         rmdir 'testdir'
       end
     end
@@ -93,7 +93,7 @@ RSpec.describe 'FTPS Unit Tests' do
       expect(@ftp_session).to receive(:pwd).and_return('/home/user')
       expect(@ftp_session).to receive(:delete).with('file.txt')
 
-      @client.ftps 'test.host', username: 'user', password: 'pass' do
+      @client.ftps 'test.host', 'path/to/ca_file', username: 'user', password: 'pass' do
         delete 'file.txt'
       end
     end
@@ -102,7 +102,7 @@ RSpec.describe 'FTPS Unit Tests' do
       expect(@ftp_session).to receive(:pwd).and_return('/home/user')
       expect(@ftp_session).to receive(:rename).with('old.txt', 'new.txt')
 
-      @client.ftps 'test.host', username: 'user', password: 'pass' do
+      @client.ftps 'test.host', 'path/to/ca_file', username: 'user', password: 'pass' do
         rename 'old.txt', 'new.txt'
       end
     end
@@ -110,7 +110,7 @@ RSpec.describe 'FTPS Unit Tests' do
     it 'changes directory' do
       expect(@ftp_session).to receive(:chdir).with('/some/path')
 
-      @client.ftps 'test.host', username: 'user', password: 'pass' do
+      @client.ftps 'test.host', 'path/to/ca_file', username: 'user', password: 'pass' do
         chdir '/some/path'
       end
     end
@@ -119,7 +119,7 @@ RSpec.describe 'FTPS Unit Tests' do
       expect(@ftp_session).to receive(:pwd).and_return('/current/path')
 
       result = nil
-      @client.ftps 'test.host', username: 'user', password: 'pass' do
+      @client.ftps 'test.host', 'path/to/ca_file', username: 'user', password: 'pass' do
         result = pwd
       end
 
@@ -130,7 +130,7 @@ RSpec.describe 'FTPS Unit Tests' do
       expect(@ftp_session).to receive(:size).with('file.txt').and_return(1024)
 
       result = nil
-      @client.ftps 'test.host', username: 'user', password: 'pass' do
+      @client.ftps 'test.host', 'path/to/ca_file', username: 'user', password: 'pass' do
         result = exists 'file.txt'
       end
 
@@ -141,7 +141,7 @@ RSpec.describe 'FTPS Unit Tests' do
       expect(@ftp_session).to receive(:size).with('missing.txt').and_raise(Net::FTPPermError)
 
       result = nil
-      @client.ftps 'test.host', username: 'user', password: 'pass' do
+      @client.ftps 'test.host', 'path/to/ca_file', username: 'user', password: 'pass' do
         result = exists 'missing.txt'
       end
 
@@ -152,7 +152,7 @@ RSpec.describe 'FTPS Unit Tests' do
       expect(@ftp_session).to receive(:size).with('file.txt').and_return(2048)
 
       result = nil
-      @client.ftps 'test.host', username: 'user', password: 'pass' do
+      @client.ftps 'test.host', 'path/to/ca_file', username: 'user', password: 'pass' do
         result = file_size 'file.txt'
       end
 
@@ -164,7 +164,7 @@ RSpec.describe 'FTPS Unit Tests' do
       expect(@ftp_session).to receive(:mtime).with('file.txt').and_return(mtime_value)
 
       result = nil
-      @client.ftps 'test.host', username: 'user', password: 'pass' do
+      @client.ftps 'test.host', 'path/to/ca_file', username: 'user', password: 'pass' do
         result = mtime 'file.txt'
       end
 
@@ -177,7 +177,7 @@ RSpec.describe 'FTPS Unit Tests' do
       expect(@ftp_session).to receive(:list).with('/some/path').and_return(files)
 
       result = nil
-      @client.ftps 'test.host', username: 'user', password: 'pass' do
+      @client.ftps 'test.host', 'path/to/ca_file', username: 'user', password: 'pass' do
         result = list '/some/path'
       end
 
@@ -201,19 +201,20 @@ RSpec.describe 'FTPS Unit Tests' do
       expect(ftp_session).to receive(:putbinaryfile).with('test.txt', 'test.txt')
 
       client = Spectre::FTP::Client.new({}, Logger.new(StringIO.new))
-      client.ftps 'test.host', username: 'user', password: 'pass' do
+      client.ftps 'test.host', 'path/to/ca_file', username: 'user', password: 'pass' do
         upload 'test.txt'
       end
     end
 
     it 'allows custom SSL options' do
-      opts = [
-        'test.host',
-        DEFAULT_FTPS_OPTS
-      ]
+      custom_opts = {
+        port: 990,
+        ssl: { ca_file: 'path/to/ca_file', verify_mode: OpenSSL::SSL::VERIFY_NONE },
+        implicit_ftps: true
+      }
 
       ftp_session = double(Net::FTP)
-      expect(Net::FTP).to receive(:new).with(*opts).and_return(ftp_session)
+      expect(Net::FTP).to receive(:new).with('test.host', custom_opts).and_return(ftp_session)
       expect(ftp_session).to receive(:closed?)
       expect(ftp_session).to receive(:close)
       expect(ftp_session).to receive(:login).with('user', 'pass')
@@ -221,7 +222,8 @@ RSpec.describe 'FTPS Unit Tests' do
       expect(ftp_session).to receive(:putbinaryfile).with('test.txt', 'test.txt')
 
       client = Spectre::FTP::Client.new({}, Logger.new(StringIO.new))
-      client.ftps 'test.host', username: 'user', password: 'pass', ssl: { implicit: true, verify_mode: 0 } do
+      client.ftps 'test.host', 'path/to/ca_file', username: 'user', password: 'pass',
+                                                  ssl: { verify_mode: OpenSSL::SSL::VERIFY_NONE } do
         upload 'test.txt'
       end
     end

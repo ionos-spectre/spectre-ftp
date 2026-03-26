@@ -532,7 +532,7 @@ describe 'File Operations Work Identically' do
   
   # FTPS (implicit SSL) - same operations!
   it 'performs identical operations via FTPS' do
-    ftps 'my-server' do
+    ftps 'my-server', '/path/to/ca-cert.pem' do
       mkdir 'test-dir'
       upload test_file, to: remote_file
       assert (exists remote_file).to be true
@@ -546,10 +546,10 @@ describe 'File Operations Work Identically' do
       rmdir 'test-dir'
     end
   end
-  
+
   # FTPES (explicit SSL) - same operations!
   it 'performs identical operations via FTPES' do
-    ftpes 'my-server' do
+    ftpes 'my-server', '/path/to/ca-cert.pem' do
       mkdir 'test-dir'
       upload test_file, to: remote_file
       assert (exists remote_file).to be true
@@ -620,11 +620,18 @@ All methods below work identically for `ftp()`, `ftps()`, `ftpes()`, and `sftp()
 | `rmdir` | `dirname` | Remove a directory | - |
 | `delete` | `filename` | Delete a file | - |
 | `rename` | `oldname, newname` | Rename or move a file | - |
-| `chdir` | `path` | Change current directory | - |
 | `pwd` | - | Get current directory | String |
 | `exists` | `path` | Check if file/directory exists | Boolean |
 | `file_size` | `filename` | Get file size | Integer (bytes) |
 | `mtime` | `filename` | Get modification time | Time |
+
+### FTP-Specific Methods
+
+These methods are available only for FTP/FTPS/FTPES connections:
+
+| Method | Parameters | Description | Returns |
+|--------|-----------|-------------|---------|
+| `chdir` | `path` | Change current directory | - |
 
 ### SFTP-Specific Methods
 
@@ -642,17 +649,43 @@ These methods are available only for SFTP connections:
 
 ## FTPS and FTPES - Secure FTP Operations
 
-This module provides two secure FTP variants that use the same operations as `ftp()` but with SSL/TLS encryption:
+This module provides two secure FTP variants that use the same operations as `ftp()` but with SSL/TLS encryption. Both accept an optional `ca_file` parameter pointing to the CA certificate used to verify the server's SSL certificate. When `ca_file` is provided, `verify_mode` defaults to `VERIFY_PEER`. When omitted, SSL is enabled without certificate verification (backward compatible with previous versions).
 
 The `ftps()` method establishes an SSL/TLS connection immediately upon connecting. This is also known as "implicit FTPS".
 
-**Settings:** `port: 990`, `ssl: true`, `implicit: true`
+```ruby
+# With CA file (recommended for production)
+ftps 'my-server', '/path/to/ca-cert.pem' do
+  upload 'file.txt'
+end
+
+# Without CA file (no certificate verification)
+ftps 'my-server' do
+  upload 'file.txt'
+end
+```
+
+**Settings with CA file:** `port: 990`, `ssl: { ca_file: ca_file, verify_mode: VERIFY_PEER }`, `implicit: true`
+**Settings without CA file:** `port: 990`, `ssl: true`, `implicit: true`
 
 The `ftpes()` method starts as a plain FTP connection, then upgrades to SSL/TLS using the AUTH TLS command. This is also known as "explicit FTPS" or "FTPES".
 
-**Settings:** `port: 21`, `ssl: true`, `implicit: false`
+```ruby
+# With CA file (recommended for production)
+ftpes 'my-server', '/path/to/ca-cert.pem' do
+  upload 'file.txt'
+end
 
-You can override the port in each of the functions, but the SSL method will be forced as described. If you want full control over the options use `ftp()`
+# Without CA file (no certificate verification)
+ftpes 'my-server' do
+  upload 'file.txt'
+end
+```
+
+**Settings with CA file:** `port: 21`, `ssl: { ca_file: ca_file, verify_mode: VERIFY_PEER }`, `implicit: false`
+**Settings without CA file:** `port: 21`, `ssl: true`, `implicit: false`
+
+You can override the port and SSL verify mode via the config hash, but the SSL method will be forced as described. If you want full control over the options use `ftp()`
 
 
 ---

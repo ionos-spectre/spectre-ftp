@@ -291,18 +291,22 @@ module Spectre
         @logger = logger
       end
 
-      def ftps(name, config = {}, &)
-        config[:ssl] = true
+      def ftps(name, ca_file, config = {}, &)
         config[:port] ||= 990
         config[:implicit] = true
-
+        config[:ssl] ||= {}
+        config[:ssl][:ca_file] = ca_file
+        config[:ssl][:verify_mode] ||= OpenSSL::SSL::VERIFY_PEER
+        
         ftp(name, config, &)
       end
 
-      def ftpes(name, config = {}, &)
-        config[:ssl] = true
+      def ftpes(name, ca_file, config = {}, &)
         config[:port] ||= 21
         config[:implicit] = false
+        config[:ssl] ||= {}
+        config[:ssl][:ca_file] = ca_file
+        config[:ssl][:verify_mode] ||= OpenSSL::SSL::VERIFY_PEER
 
         ftp(name, config, &)
       end

@@ -41,7 +41,7 @@ RSpec.describe 'FTPS Unit Tests' do
     end
 
     it 'does upload a file via ftps' do
-      @client.ftps 'some-data.host' do
+      @client.ftps 'some-data.host', 'path/to/ca_file' do
         username 'dummy'
         password '<some-secret-password>'
         upload 'dummy.txt'
@@ -49,7 +49,7 @@ RSpec.describe 'FTPS Unit Tests' do
     end
 
     it 'does upload a file via ftps with preconfig' do
-      @client.ftps 'example' do
+      @client.ftps 'example', 'path/to/ca_file' do
         upload 'dummy.txt'
       end
     end
@@ -221,7 +221,7 @@ RSpec.describe 'FTPS Unit Tests' do
       expect(ftp_session).to receive(:putbinaryfile).with('test.txt', 'test.txt')
 
       client = Spectre::FTP::Client.new({}, Logger.new(StringIO.new))
-      client.ftps 'test.host', 'path/to/ca_file', username: 'user', password: 'pass', ssl: { implicit: true, verify_mode: 0 } do
+      client.ftps 'test.host', 'path/to/ca_file', username: 'user', password: 'pass', ssl: { verify_mode: 1 } do
         upload 'test.txt'
       end
     end

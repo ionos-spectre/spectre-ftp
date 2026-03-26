@@ -221,7 +221,7 @@ RSpec.describe 'FTPES Unit Tests' do
       expect(ftp_session).to receive(:putbinaryfile).with('test.txt', 'test.txt')
 
       client = Spectre::FTP::Client.new({}, Logger.new(StringIO.new))
-      client.ftpes 'test.host', 'path/to/ca_file', username: 'user', password: 'pass', ssl: { implicit: false, verify_mode: 0 } do
+      client.ftpes 'test.host', 'path/to/ca_file', username: 'user', password: 'pass', ssl: { verify_mode: 1 } do
         upload 'test.txt'
       end
     end

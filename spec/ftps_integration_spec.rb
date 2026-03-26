@@ -160,7 +160,8 @@ RSpec.describe 'FTPS Integration', :integration, skip: 'Requires SSL-enabled FTP
                            port: 2990,
                            username: 'ftpuser',
                            password: 'ftppass',
-                           ssl: { implicit: true, verify_mode: OpenSSL::SSL::VERIFY_NONE } do
+                           implicit: true,
+                           ssl: { verify_mode: OpenSSL::SSL::VERIFY_NONE } do
         can_connect?
       end
 

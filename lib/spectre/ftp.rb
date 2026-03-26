@@ -297,7 +297,7 @@ module Spectre
         config[:ssl] ||= {}
         config[:ssl][:ca_file] = ca_file
         config[:ssl][:verify_mode] ||= OpenSSL::SSL::VERIFY_PEER
-        
+
         ftp(name, config, &)
       end
 
